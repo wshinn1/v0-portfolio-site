@@ -1,15 +1,10 @@
 import type { Metadata } from 'next'
-import dynamic from 'next/dynamic'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 
-// Dynamic import with ssr: false - completely skips server rendering
-// This prevents any hydration mismatch since the component only renders on client
-const CustomCursor = dynamic(
-  () => import('@/components/layout/custom-cursor').then(mod => mod.CustomCursor),
-  { ssr: false }
-)
+// Import cursor wrapper - uses dynamic import with ssr:false internally
+import { CursorWrapper } from '@/components/layout/cursor-wrapper'
 
 const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
@@ -45,7 +40,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="font-sans antialiased">
-        <CustomCursor />
+        <CursorWrapper />
         {children}
         <Analytics />
       </body>
