@@ -22,6 +22,9 @@ export interface SiteSettings {
   primary_color: string
   secondary_color: string
   background_color: string
+  og_image: string | null
+  og_title: string | null
+  og_description: string | null
   created_at: string
   updated_at: string
 }
