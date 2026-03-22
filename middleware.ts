@@ -1,12 +1,12 @@
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+import { type NextRequest, NextResponse } from 'next/server'
 
-export function middleware(request: NextRequest) {
-  // Middleware is currently disabled - just pass through
+// Next.js middleware - currently disabled
+// Will be re-enabled for admin authentication in Phase 11
+export function middleware(_request: NextRequest): NextResponse {
   return NextResponse.next()
 }
 
+// Empty matcher = middleware doesn't run on any routes
 export const config = {
-  // Empty matcher means middleware runs on no routes
-  matcher: [],
+  matcher: []
 }

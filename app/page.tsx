@@ -1,16 +1,20 @@
 import { getCMSData } from '@/lib/cms/get-cms-data'
 import { TypographyProvider } from '@/components/cms/typography-provider'
 import { HeroSection } from '@/components/sections/hero-section'
-import type { HeroContent } from '@/lib/types/cms'
+import { AboutSection } from '@/components/sections/about-section'
+import type { HeroContent, AboutContent } from '@/lib/types/cms'
 
 export const revalidate = 60 // Revalidate every 60 seconds
 
 export default async function HomePage() {
   const { typography, siteSettings, sections } = await getCMSData()
   
-  // Get hero section content
+  // Get section contents
   const heroSection = sections.find((s) => s.section_type === 'hero')
   const heroContent = heroSection?.content as HeroContent | undefined
+  
+  const aboutSection = sections.find((s) => s.section_type === 'about')
+  const aboutContent = aboutSection?.content as AboutContent | undefined
 
   return (
     <TypographyProvider typography={typography}>
@@ -62,10 +66,15 @@ export default async function HomePage() {
                 />
               )}
 
-              {/* Placeholder for other sections - will be built in subsequent phases */}
+              {/* About Section */}
+              {aboutContent && (
+                <AboutSection content={aboutContent} />
+              )}
+
+              {/* Placeholder for remaining sections */}
               <div className="mt-16 py-8 border-t border-gray-200 text-center text-gray-400">
-                <p className="text-sm">More sections coming in Phase 5-10...</p>
-                <p className="text-xs mt-2">About, Work, Services, Experience, FAQ, Contact</p>
+                <p className="text-sm">More sections coming in Phase 6-10...</p>
+                <p className="text-xs mt-2">Work, Services, Experience, FAQ, Contact</p>
               </div>
             </div>
           </div>
