@@ -1,12 +1,12 @@
+// Next.js Middleware - Updated 2026-03-22
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-// Required named export for Next.js middleware
-export function middleware(_req: NextRequest) {
+export function middleware(request: NextRequest) {
+  // Simple passthrough - no auth checks
   return NextResponse.next()
 }
 
-// Empty matcher - middleware won't run on any routes
 export const config = {
   matcher: [],
 }

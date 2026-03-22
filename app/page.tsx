@@ -52,7 +52,7 @@ export default async function HomePage() {
 
         {/* Fixed Left Sidebar - Desktop Only */}
         <div className="flex">
-          <aside className="hidden lg:block w-[22%] min-w-[200px] max-w-[280px] min-h-screen fixed left-0 top-0 border-r border-gray-200 bg-inherit p-6">
+          <aside className="hidden lg:block w-[13%] min-w-[160px] max-w-[200px] min-h-screen fixed left-0 top-0 border-r border-gray-200 bg-inherit p-4">
             <div className="h-full flex flex-col justify-between">
               <div>
                 {/* Logo */}
@@ -83,7 +83,7 @@ export default async function HomePage() {
           </aside>
 
           {/* Main Content Area */}
-          <div className="w-full lg:w-[78%] lg:ml-[22%] min-h-screen pt-16 lg:pt-0">
+          <div className="w-full lg:w-[87%] lg:ml-[13%] min-h-screen pt-16 lg:pt-0">
             <div className="p-8 lg:p-16">
               {/* Hero Section */}
               {heroContent && siteSettings && (
