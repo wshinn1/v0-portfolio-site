@@ -6,7 +6,8 @@ import { WorkSection } from '@/components/sections/work-section'
 import { ServicesSection } from '@/components/sections/services-section'
 import { ExperienceSection } from '@/components/sections/experience-section'
 import { FAQSection } from '@/components/sections/faq-section'
-import type { HeroContent, AboutContent, WorkContent, ServicesContent, ExperienceContent, FAQContent } from '@/lib/types/cms'
+import { ContactSection } from '@/components/sections/contact-section'
+import type { HeroContent, AboutContent, WorkContent, ServicesContent, ExperienceContent, FAQContent, ContactContent } from '@/lib/types/cms'
 
 export const revalidate = 60 // Revalidate every 60 seconds
 
@@ -31,6 +32,9 @@ export default async function HomePage() {
   
   const faqSection = sections.find((s) => s.section_type === 'faq')
   const faqContent = faqSection?.content as FAQContent | undefined
+  
+  const contactSection = sections.find((s) => s.section_type === 'contact')
+  const contactContent = contactSection?.content as ContactContent | undefined
 
   return (
     <TypographyProvider typography={typography}>
@@ -110,10 +114,13 @@ export default async function HomePage() {
                 <FAQSection content={faqContent} />
               )}
 
-              {/* Placeholder for Contact section */}
-              <div className="mt-16 py-8 border-t border-gray-200 text-center text-gray-400">
-                <p className="text-sm">Contact section coming in Phase 10...</p>
-              </div>
+              {/* Contact Section */}
+              {contactContent && siteSettings && (
+                <ContactSection 
+                  content={contactContent} 
+                  primaryColor={siteSettings.primary_color}
+                />
+              )}
             </div>
           </div>
         </div>
