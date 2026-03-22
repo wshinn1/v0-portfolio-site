@@ -208,19 +208,23 @@ A single-page portfolio website with a full CMS backend that allows editing of a
 
 ---
 
-### Phase 9: FAQ Section (Frontend + Admin)
+### Phase 9: FAQ Section (Frontend + Admin) ✅ COMPLETE
 **Goal**: Build accordion FAQ component
 
 **Frontend Components:**
-- [ ] Section label + headline (left side)
-- [ ] Accordion list with +/- icons
-- [ ] Smooth expand/collapse animation
-- [ ] Answer reveal on click
+- [x] Section label + headline (left side, sticky)
+- [x] Accordion list with +/- icons
+- [x] Smooth expand/collapse animation (max-height transition)
+- [x] Answer reveal on click
 
 **Admin Panel:**
-- [ ] FAQ list manager
-- [ ] Question and Answer fields (rich text for answer)
-- [ ] Reorder functionality
+- [x] FAQ list manager (add/remove questions)
+- [x] Question and Answer fields (textarea for answers)
+- [x] Save functionality
+
+**Files Created:**
+- `components/sections/faq-section.tsx` - Frontend FAQ accordion
+- `components/admin/section-editors/faq-editor.tsx` - Admin editor
 
 ---
 
