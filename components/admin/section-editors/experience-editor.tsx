@@ -12,7 +12,11 @@ interface ExperienceEditorProps {
 
 export function ExperienceEditor({ content, sectionId, onSave }: ExperienceEditorProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const [formData, setFormData] = useState<ExperienceContent>(content)
+  const [formData, setFormData] = useState<ExperienceContent>({
+    label: content?.label || '',
+    heading: content?.heading || '',
+    experiences: content?.experiences || [],
+  })
   const [isSaving, setIsSaving] = useState(false)
 
   const handleSave = async () => {

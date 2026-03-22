@@ -19,7 +19,11 @@ const ICON_OPTIONS = [
 
 export function ServicesEditor({ content, sectionId, onSave }: ServicesEditorProps) {
   const [isExpanded, setIsExpanded] = useState(false)
-  const [formData, setFormData] = useState<ServicesContent>(content)
+  const [formData, setFormData] = useState<ServicesContent>({
+    label: content?.label || '',
+    heading: content?.heading || '',
+    services: content?.services || [],
+  })
   const [isSaving, setIsSaving] = useState(false)
 
   const handleSave = async () => {

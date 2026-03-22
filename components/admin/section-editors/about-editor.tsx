@@ -13,7 +13,16 @@ export function AboutEditor({ section, onSave }: AboutEditorProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
-  const [content, setContent] = useState<AboutContent>(section.content as AboutContent)
+  const sectionContent = section?.content as AboutContent | undefined
+  const [content, setContent] = useState<AboutContent>({
+    label: sectionContent?.label || '',
+    heading: sectionContent?.heading || '',
+    jobTitle: sectionContent?.jobTitle || '',
+    description: sectionContent?.description || '',
+    resumeButtonText: sectionContent?.resumeButtonText || '',
+    resumeUrl: sectionContent?.resumeUrl || '',
+    contactButtonText: sectionContent?.contactButtonText || '',
+  })
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleSave = async () => {

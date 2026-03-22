@@ -117,7 +117,7 @@ export function HeroSection({ content, siteSettings }: HeroSectionProps) {
               className="text-2xl font-bold italic"
               style={{ color: primaryColor }}
             >
-              Worq
+              {content.brandName || 'Worq'}
             </span>
             <span className="text-sm text-gray-500">
               {content.email}

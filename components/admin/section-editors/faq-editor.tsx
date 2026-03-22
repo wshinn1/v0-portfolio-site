@@ -11,7 +11,11 @@ interface FAQEditorProps {
 
 export function FAQEditor({ content, onSave }: FAQEditorProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const [formData, setFormData] = useState<FAQContent>(content)
+  const [formData, setFormData] = useState<FAQContent>({
+    label: content?.label || '',
+    heading: content?.heading || '',
+    questions: content?.questions || [],
+  })
   const [saving, setSaving] = useState(false)
 
   const handleSave = async () => {
