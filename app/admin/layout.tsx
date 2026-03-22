@@ -1,6 +1,7 @@
 "use client"
 
 import type { ReactNode } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { 
@@ -8,7 +9,8 @@ import {
   Type, 
   Settings, 
   FileText,
-  LogOut 
+  LogOut,
+  Loader2
 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
@@ -24,10 +26,56 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
+  const [isLoading, setIsLoading] = useState(true)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
 
-  // Don't show admin layout on login page
-  if (pathname === "/admin/login") {
+  // Check authentication on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (!user && pathname !== "/admin/login" && pathname !== "/admin/signup") {
+        router.push("/admin/login")
+      } else {
+        setIsAuthenticated(!!user)
+      }
+      setIsLoading(false)
+    }
+
+    checkAuth()
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT' || !session) {
+        if (pathname !== "/admin/login" && pathname !== "/admin/signup") {
+          router.push("/admin/login")
+        }
+        setIsAuthenticated(false)
+      } else if (session) {
+        setIsAuthenticated(true)
+      }
+    })
+
+    return () => subscription.unsubscribe()
+  }, [pathname, router, supabase.auth])
+
+  // Don't show admin layout on login/signup pages
+  if (pathname === "/admin/login" || pathname === "/admin/signup") {
     return <>{children}</>
+  }
+
+  // Show loading state while checking auth
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-zinc-900 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-white animate-spin" />
+      </div>
+    )
+  }
+
+  // Don't render admin if not authenticated
+  if (!isAuthenticated) {
+    return null
   }
 
   const handleSignOut = async () => {
