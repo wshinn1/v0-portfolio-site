@@ -10,9 +10,13 @@ export default function SettingsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [isUploadingOG, setIsUploadingOG] = useState(false)
+  const [isUploadingFavicon, setIsUploadingFavicon] = useState(false)
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const ogImageInputRef = useRef<HTMLInputElement>(null)
+  const faviconInputRef = useRef<HTMLInputElement>(null)
+  const logoInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     async function fetchSettings() {
@@ -67,17 +71,17 @@ export default function SettingsPage() {
     setSettings({ ...settings, [field]: value })
   }
 
-  const handleOGImageUpload = async (file: File) => {
+  const handleImageUpload = async (file: File, field: 'og_image' | 'favicon_url' | 'logo_url', setUploading: (v: boolean) => void) => {
     if (!file) return
 
     // Validate file type
-    const validTypes = ['image/jpeg', 'image/png', 'image/webp']
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/x-icon', 'image/svg+xml', 'image/gif']
     if (!validTypes.includes(file.type)) {
-      setError('Please upload a JPEG, PNG, or WebP image')
+      setError('Please upload a valid image file (JPEG, PNG, WebP, ICO, SVG, or GIF)')
       return
     }
 
-    setIsUploadingOG(true)
+    setUploading(true)
     try {
       const formData = new FormData()
       formData.append('file', file)
@@ -89,7 +93,7 @@ export default function SettingsPage() {
 
       if (response.ok) {
         const data = await response.json()
-        updateField('og_image', data.url)
+        updateField(field, data.url)
       } else {
         setError('Upload failed. Please try again.')
       }
@@ -97,7 +101,7 @@ export default function SettingsPage() {
       console.error('Upload failed:', err)
       setError('Upload failed. Please try again.')
     } finally {
-      setIsUploadingOG(false)
+      setUploading(false)
     }
   }
 
@@ -189,41 +193,107 @@ export default function SettingsPage() {
         <div className="bg-white rounded-xl border border-zinc-200 p-6">
           <h2 className="text-xl font-semibold text-zinc-900 mb-6">Branding</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Logo */}
             <div>
               <label className="block text-sm font-medium text-zinc-700 mb-2">
-                Logo URL
+                Logo
               </label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={settings.logo_url || ""}
-                  onChange={(e) => updateField("logo_url", e.target.value)}
-                  className="flex-1 px-4 py-3 border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent"
-                  placeholder="https://..."
-                />
-              </div>
-              {settings.logo_url && (
-                <div className="mt-3 p-4 bg-zinc-50 rounded-lg">
-                  <img
-                    src={settings.logo_url}
-                    alt="Logo preview"
-                    className="max-h-16 object-contain"
-                  />
+              <p className="text-xs text-zinc-400 mb-3">
+                Your site logo (recommended: PNG or SVG)
+              </p>
+              
+              {settings.logo_url ? (
+                <div className="relative inline-block">
+                  <div className="p-4 bg-zinc-50 rounded-lg border border-zinc-200">
+                    <img
+                      src={settings.logo_url}
+                      alt="Logo preview"
+                      className="max-h-16 object-contain"
+                    />
+                  </div>
+                  <button
+                    onClick={() => updateField('logo_url', null)}
+                    className="absolute -top-2 -right-2 p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                    title="Remove logo"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
                 </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-zinc-300 rounded-lg cursor-pointer hover:bg-zinc-50 transition-colors">
+                  {isUploadingLogo ? (
+                    <Loader2 className="w-6 h-6 text-zinc-400 animate-spin" />
+                  ) : (
+                    <div className="flex flex-col items-center">
+                      <Upload className="w-6 h-6 text-zinc-400 mb-1" />
+                      <span className="text-sm text-zinc-500">Upload logo</span>
+                    </div>
+                  )}
+                  <input
+                    ref={logoInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    disabled={isUploadingLogo}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (file) handleImageUpload(file, 'logo_url', setIsUploadingLogo)
+                    }}
+                  />
+                </label>
               )}
             </div>
 
+            {/* Favicon */}
             <div>
               <label className="block text-sm font-medium text-zinc-700 mb-2">
-                Favicon URL
+                Favicon
               </label>
-              <input
-                type="text"
-                value={settings.favicon_url || ""}
-                onChange={(e) => updateField("favicon_url", e.target.value)}
-                className="w-full px-4 py-3 border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent"
-                placeholder="https://..."
-              />
+              <p className="text-xs text-zinc-400 mb-3">
+                The small icon shown in browser tabs (recommended: 32x32 PNG or ICO)
+              </p>
+              
+              {settings.favicon_url ? (
+                <div className="relative inline-block">
+                  <div className="p-4 bg-zinc-50 rounded-lg border border-zinc-200 flex items-center gap-3">
+                    <img
+                      src={settings.favicon_url}
+                      alt="Favicon preview"
+                      className="w-8 h-8 object-contain"
+                    />
+                    <span className="text-sm text-zinc-500">Favicon uploaded</span>
+                  </div>
+                  <button
+                    onClick={() => updateField('favicon_url', null)}
+                    className="absolute -top-2 -right-2 p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                    title="Remove favicon"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-zinc-300 rounded-lg cursor-pointer hover:bg-zinc-50 transition-colors">
+                  {isUploadingFavicon ? (
+                    <Loader2 className="w-6 h-6 text-zinc-400 animate-spin" />
+                  ) : (
+                    <div className="flex flex-col items-center">
+                      <Upload className="w-6 h-6 text-zinc-400 mb-1" />
+                      <span className="text-sm text-zinc-500">Upload favicon</span>
+                    </div>
+                  )}
+                  <input
+                    ref={faviconInputRef}
+                    type="file"
+                    accept="image/png,image/x-icon,image/svg+xml,image/gif"
+                    className="hidden"
+                    disabled={isUploadingFavicon}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (file) handleImageUpload(file, 'favicon_url', setIsUploadingFavicon)
+                    }}
+                  />
+                </label>
+              )}
             </div>
           </div>
         </div>
@@ -316,7 +386,7 @@ export default function SettingsPage() {
                     disabled={isUploadingOG}
                     onChange={(e) => {
                       const file = e.target.files?.[0]
-                      if (file) handleOGImageUpload(file)
+                      if (file) handleImageUpload(file, 'og_image', setIsUploadingOG)
                     }}
                   />
                 </label>
