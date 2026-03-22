@@ -31,9 +31,13 @@ export function AboutSection({ content }: AboutSectionProps) {
           </h3>
 
           {/* Description */}
-          <p className="text-base md:text-lg text-[#4a4a4a] leading-relaxed mb-8 md:mb-10">
-            {content.description}
-          </p>
+          <div className="space-y-4 mb-8 md:mb-10">
+            {content.description?.split('\n').filter(p => p.trim()).map((paragraph, index) => (
+              <p key={index} className="text-base md:text-lg text-[#4a4a4a] leading-relaxed">
+                {paragraph}
+              </p>
+            ))}
+          </div>
 
           {/* CTA Buttons */}
           <div className="flex flex-wrap gap-4">
