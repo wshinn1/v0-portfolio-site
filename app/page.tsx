@@ -1,5 +1,7 @@
 import { getCMSData } from '@/lib/cms/get-cms-data'
-import { TypographyProvider, H1, H2, Body } from '@/components/cms/typography-provider'
+import { TypographyProvider } from '@/components/cms/typography-provider'
+import { HeroSection } from '@/components/sections/hero-section'
+import type { HeroContent } from '@/lib/types/cms'
 
 export const revalidate = 60 // Revalidate every 60 seconds
 
@@ -8,82 +10,64 @@ export default async function HomePage() {
   
   // Get hero section content
   const heroSection = sections.find((s) => s.section_type === 'hero')
-  const heroContent = heroSection?.content as { firstName?: string; lastName?: string; tagline?: string } | undefined
+  const heroContent = heroSection?.content as HeroContent | undefined
 
   return (
     <TypographyProvider typography={typography}>
       <main 
-        className="min-h-screen p-8"
+        className="min-h-screen"
         style={{ backgroundColor: siteSettings?.background_color || '#f5f5f5' }}
       >
-        <div className="max-w-4xl mx-auto space-y-8">
-          {/* Site Name */}
-          <div className="text-center">
-            <H1>{siteSettings?.site_name || 'Portfolio'}</H1>
-          </div>
-
-          {/* Hero Preview */}
-          {heroContent && (
-            <div className="space-y-4">
-              <H2>
-                {heroContent.firstName} {heroContent.lastName}
-              </H2>
-              <Body>{heroContent.tagline}</Body>
-            </div>
-          )}
-
-          {/* Sections List */}
-          <div className="mt-12 p-6 bg-white rounded-lg border">
-            <h3 className="font-semibold mb-4">Loaded Sections:</h3>
-            <ul className="space-y-2">
-              {sections.map((section) => (
-                <li key={section.id} className="flex items-center gap-2">
-                  <span 
-                    className="px-2 py-1 text-xs rounded-full"
-                    style={{ 
-                      backgroundColor: siteSettings?.primary_color || '#ff6b4a',
-                      color: '#fff'
-                    }}
+        {/* Fixed Left Sidebar - will be built in Phase 11 */}
+        <div className="flex">
+          {/* Placeholder for sidebar */}
+          <aside className="hidden lg:block w-[35%] min-h-screen fixed left-0 top-0 border-r border-gray-200 bg-inherit p-8">
+            <div className="h-full flex flex-col justify-between">
+              <div>
+                {/* Logo placeholder */}
+                <span 
+                  className="text-2xl font-bold italic"
+                  style={{ color: siteSettings?.primary_color || '#ff6b4a' }}
+                >
+                  {siteSettings?.site_name || 'Worq'}
+                </span>
+              </div>
+              <nav className="space-y-4">
+                {sections.map((section) => (
+                  <a 
+                    key={section.id}
+                    href={`#${section.section_type}`}
+                    className="block text-gray-600 hover:text-gray-900 transition-colors"
                   >
-                    {section.section_type}
-                  </span>
-                  <span>{section.title}</span>
-                  {!section.is_visible && (
-                    <span className="text-xs text-gray-400">(hidden)</span>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </div>
+                    {section.title}
+                  </a>
+                ))}
+              </nav>
+              <div className="text-sm text-gray-500">
+                <a href="/admin" className="hover:text-gray-700">
+                  Admin Panel
+                </a>
+              </div>
+            </div>
+          </aside>
 
-          {/* Typography Preview */}
-          <div className="mt-12 p-6 bg-white rounded-lg border">
-            <h3 className="font-semibold mb-4">Typography Settings Loaded:</h3>
-            <ul className="space-y-2 text-sm">
-              {typography.map((t) => (
-                <li key={t.id} className="flex items-center gap-2">
-                  <span className="font-mono bg-gray-100 px-2 py-0.5 rounded">
-                    {t.element_type}
-                  </span>
-                  <span>{t.font_family}</span>
-                  <span className="text-gray-400">|</span>
-                  <span>{t.font_size}</span>
-                  <span className="text-gray-400">|</span>
-                  <span>{t.font_weight}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
+          {/* Main Content Area */}
+          <div className="w-full lg:w-[65%] lg:ml-[35%] min-h-screen">
+            <div className="p-8 lg:p-16">
+              {/* Hero Section */}
+              {heroContent && siteSettings && (
+                <HeroSection 
+                  content={heroContent} 
+                  siteSettings={siteSettings}
+                />
+              )}
 
-          {/* Admin Link */}
-          <div className="text-center pt-8">
-            <a 
-              href="/admin" 
-              className="inline-block px-6 py-3 rounded-full text-white font-medium"
-              style={{ backgroundColor: siteSettings?.primary_color || '#ff6b4a' }}
-            >
-              Go to Admin Panel
-            </a>
+              {/* Placeholder for other sections - will be built in subsequent phases */}
+              <div className="mt-16 py-8 border-t border-gray-200 text-center text-gray-400">
+                <p className="text-sm">More sections coming in Phase 5-10...</p>
+                <p className="text-xs mt-2">About, Work, Services, Experience, FAQ, Contact</p>
+              </div>
+            </div>
           </div>
         </div>
       </main>
