@@ -67,7 +67,7 @@ export function MobileMenu({ sections, siteName, primaryColor }: MobileMenuProps
               onClick={() => handleNavClick(section.section_type)}
               className="block w-full text-left text-gray-600 hover:text-gray-900 py-2 transition-colors"
             >
-              {section.title}
+              {section.section_type === 'hero' ? 'Full Stack Engineer' : section.title}
             </button>
           ))}
 
