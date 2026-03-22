@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react'
 
+// Custom cursor with expanding effect on hover
+// This component is dynamically imported with ssr: false in layout.tsx
 export function CustomCursor() {
-  // Start with null to match server render - component renders nothing initially
   const [shouldRender, setShouldRender] = useState(false)
   const [position, setPosition] = useState({ x: 0, y: 0 })
   const [isHovering, setIsHovering] = useState(false)
