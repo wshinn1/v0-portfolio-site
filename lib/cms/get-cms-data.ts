@@ -2,13 +2,15 @@ import { createClient } from '@/lib/supabase/server'
 import type { CMSData, Section, SectionType, Typography, SiteSettings } from '@/lib/types/cms'
 
 // Fetch all CMS data for server components
-export async function getCMSData(): Promise<CMSData> {
+export async function getCMSData(includeHidden = false): Promise<CMSData> {
   const supabase = await createClient()
 
+  const sectionsQuery = supabase.from('sections').select('*').order('sort_order')
+  
   const [typographyRes, settingsRes, sectionsRes] = await Promise.all([
     supabase.from('typography').select('*').order('element_type'),
     supabase.from('site_settings').select('*').single(),
-    supabase.from('sections').select('*').eq('is_visible', true).order('sort_order'),
+    includeHidden ? sectionsQuery : sectionsQuery.eq('is_visible', true),
   ])
 
   return {

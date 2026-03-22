@@ -3,6 +3,9 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 
+// Import cursor wrapper - uses dynamic import with ssr:false internally
+import { CursorWrapper } from '@/components/layout/cursor-wrapper'
+
 const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
@@ -37,6 +40,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="font-sans antialiased">
+        <CursorWrapper />
         {children}
         <Analytics />
       </body>
