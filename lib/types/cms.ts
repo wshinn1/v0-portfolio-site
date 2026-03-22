@@ -25,6 +25,7 @@ export interface SiteSettings {
   og_image: string | null
   og_title: string | null
   og_description: string | null
+  copyright_text: string | null
   created_at: string
   updated_at: string
 }

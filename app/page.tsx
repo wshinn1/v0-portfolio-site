@@ -142,6 +142,7 @@ export default async function HomePage() {
                 <ContactSection 
                   content={contactContent} 
                   primaryColor={siteSettings.primary_color}
+                  copyrightText={siteSettings.copyright_text}
                 />
               )}
             </div>

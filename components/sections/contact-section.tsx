@@ -9,6 +9,7 @@ import type { ContactContent } from '@/lib/types/cms'
 interface ContactSectionProps {
   content: ContactContent
   primaryColor?: string
+  copyrightText?: string | null
 }
 
 // Social icons as inline SVGs
@@ -40,7 +41,7 @@ const socialIcons: Record<string, React.ReactNode> = {
   ),
 }
 
-export function ContactSection({ content, primaryColor = '#ff6b4a' }: ContactSectionProps) {
+export function ContactSection({ content, primaryColor = '#ff6b4a', copyrightText }: ContactSectionProps) {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -223,22 +224,8 @@ export function ContactSection({ content, primaryColor = '#ff6b4a' }: ContactSec
           </div>
 
           {/* Footer */}
-          <div className="pt-8 border-t border-gray-200 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div className="text-sm text-gray-500">
-              <p>{content.copyright}</p>
-              <p>Work by Onmix. Made with Webflow.</p>
-            </div>
-            <div className="flex items-center gap-6">
-              {content.footerLinks.map((link, index) => (
-                <Link
-                  key={index}
-                  href={link.url || '#'}
-                  className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </div>
+          <div className="pt-8 border-t border-gray-200">
+            <p className="text-sm text-gray-500">{copyrightText || content.copyright}</p>
           </div>
         </div>
       </div>

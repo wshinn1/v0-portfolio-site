@@ -349,6 +349,30 @@ export default function SettingsPage() {
           </div>
         </div>
 
+        {/* Footer / Copyright */}
+        <div className="bg-white rounded-xl border border-zinc-200 p-6">
+          <h2 className="text-xl font-semibold text-zinc-900 mb-2">Footer</h2>
+          <p className="text-sm text-zinc-500 mb-6">
+            Customize the copyright text shown at the bottom of your site
+          </p>
+          
+          <div>
+            <label className="block text-sm font-medium text-zinc-700 mb-2">
+              Copyright Text
+            </label>
+            <input
+              type="text"
+              value={settings.copyright_text || ""}
+              onChange={(e) => updateField("copyright_text", e.target.value)}
+              className="w-full px-4 py-3 border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent"
+              placeholder="© 2026 Your Name. All rights reserved."
+            />
+            <p className="text-xs text-zinc-400 mt-1">
+              This text appears in the footer of your portfolio.
+            </p>
+          </div>
+        </div>
+
         {/* Colors */}
         <div className="bg-white rounded-xl border border-zinc-200 p-6">
           <h2 className="text-xl font-semibold text-zinc-900 mb-6">Colors</h2>
