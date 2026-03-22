@@ -4,7 +4,8 @@ import { HeroSection } from '@/components/sections/hero-section'
 import { AboutSection } from '@/components/sections/about-section'
 import { WorkSection } from '@/components/sections/work-section'
 import { ServicesSection } from '@/components/sections/services-section'
-import type { HeroContent, AboutContent, WorkContent, ServicesContent } from '@/lib/types/cms'
+import { ExperienceSection } from '@/components/sections/experience-section'
+import type { HeroContent, AboutContent, WorkContent, ServicesContent, ExperienceContent } from '@/lib/types/cms'
 
 export const revalidate = 60 // Revalidate every 60 seconds
 
@@ -23,6 +24,9 @@ export default async function HomePage() {
   
   const servicesSection = sections.find((s) => s.section_type === 'services')
   const servicesContent = servicesSection?.content as ServicesContent | undefined
+  
+  const experienceSection = sections.find((s) => s.section_type === 'experience')
+  const experienceContent = experienceSection?.content as ExperienceContent | undefined
 
   return (
     <TypographyProvider typography={typography}>
@@ -92,10 +96,15 @@ export default async function HomePage() {
                 <ServicesSection content={servicesContent} />
               )}
 
+              {/* Experience Section */}
+              {experienceContent && (
+                <ExperienceSection content={experienceContent} />
+              )}
+
               {/* Placeholder for remaining sections */}
               <div className="mt-16 py-8 border-t border-gray-200 text-center text-gray-400">
-                <p className="text-sm">More sections coming in Phase 8-10...</p>
-                <p className="text-xs mt-2">Experience, FAQ, Contact</p>
+                <p className="text-sm">More sections coming in Phase 9-10...</p>
+                <p className="text-xs mt-2">FAQ, Contact</p>
               </div>
             </div>
           </div>
