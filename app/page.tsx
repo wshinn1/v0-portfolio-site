@@ -8,6 +8,7 @@ import { ExperienceSection } from '@/components/sections/experience-section'
 import { FAQSection } from '@/components/sections/faq-section'
 import { ContactSection } from '@/components/sections/contact-section'
 import { MobileMenu } from '@/components/layout/mobile-menu'
+import { ActiveNav } from '@/components/layout/active-nav'
 import type { HeroContent, AboutContent, WorkContent, ServicesContent, ExperienceContent, FAQContent, ContactContent } from '@/lib/types/cms'
 
 export const revalidate = 60 // Revalidate every 60 seconds
@@ -63,17 +64,10 @@ export default async function HomePage() {
                   {siteSettings?.site_name || 'Worq'}
                 </span>
               </div>
-              <nav className="space-y-3">
-                {sections.map((section) => (
-                  <a 
-                    key={section.id}
-                    href={`#${section.section_type}`}
-                    className="block text-sm text-gray-600 hover:text-gray-900 transition-colors"
-                  >
-                    {section.title}
-                  </a>
-                ))}
-              </nav>
+              <ActiveNav 
+                sections={sections.map(s => ({ id: s.id, section_type: s.section_type, title: s.title || s.section_type }))}
+                primaryColor={siteSettings?.primary_color || '#ff6b4a'}
+              />
               <div className="text-xs text-gray-500">
                 <a href="/admin" className="hover:text-gray-700">
                   Admin Panel

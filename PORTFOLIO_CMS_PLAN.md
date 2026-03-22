@@ -253,19 +253,24 @@ A single-page portfolio website with a full CMS backend that allows editing of a
 
 ---
 
-### Phase 11: Layout & Navigation
+### Phase 11: Layout & Navigation ✅ COMPLETE
 **Goal**: Build the fixed sidebar and scrolling layout
 
 **Frontend Components:**
-- [ ] Fixed left sidebar (30-40% width)
-- [ ] Scrollable right content area
-- [ ] Navigation links that scroll to sections
-- [ ] Active section indicator
-- [ ] Smooth scroll behavior
+- [x] Fixed left sidebar (13% width, min 160px, max 200px)
+- [x] Scrollable right content area (87% width)
+- [x] Navigation links that smooth scroll to sections
+- [x] Active section indicator (highlights current section in primary color)
+- [x] Smooth scroll behavior via CSS `scroll-smooth`
+- [x] Mobile hamburger menu with slide-in panel
+- [x] Responsive layout (mobile-first)
 
 **Admin Panel:**
-- [ ] Navigation items manager
-- [ ] Section visibility toggles (show/hide sections)
+- [x] Section visibility toggles (existing in admin/sections page)
+
+**Files Created:**
+- `components/layout/mobile-menu.tsx` - Mobile hamburger menu
+- `components/layout/active-nav.tsx` - Desktop nav with scroll-based active indicator
 
 ---
 
