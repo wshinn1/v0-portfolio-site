@@ -274,14 +274,19 @@ A single-page portfolio website with a full CMS backend that allows editing of a
 
 ---
 
-### Phase 12: Custom Cursor Effect
+### Phase 12: Custom Cursor Effect ✅ COMPLETE
 **Goal**: Implement the expanding circle cursor
 
-- [ ] Create cursor component
-- [ ] Track mouse position
-- [ ] Implement expanding circle animation on hover
-- [ ] Different states for different elements
-- [ ] Disable on touch devices
+- [x] Create cursor component (`components/layout/custom-cursor.tsx`)
+- [x] Track mouse position with smooth following
+- [x] Expanding circle animation on hover (32px to 48px)
+- [x] Different states: default (dark ring) vs hover (coral ring with fill)
+- [x] Inner dot that changes color on hover
+- [x] Disabled on touch devices
+- [x] Hides default cursor on non-touch devices
+
+**Files Created:**
+- `components/layout/custom-cursor.tsx` - Custom cursor with expanding effect
 
 ---
 
