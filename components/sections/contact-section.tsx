@@ -117,61 +117,8 @@ export function ContactSection({ content, primaryColor = '#ff6b4a' }: ContactSec
             </Link>
           </div>
           
-          {/* Contact Info Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Phone & Email */}
-            <div className="space-y-6">
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Contact us</p>
-                <p className="text-gray-900 font-medium">{content.phone}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Email</p>
-                <p className="text-gray-900 font-medium">{content.email}</p>
-              </div>
-            </div>
-            
-            {/* Social Links */}
-            <div>
-              <p className="text-sm text-gray-500 mb-3">Follow us</p>
-              <div className="flex items-center gap-4">
-                {content.socialLinks.map((social, index) => (
-                  <Link
-                    key={index}
-                    href={social.url || '#'}
-                    className="text-gray-700 hover:text-gray-900 transition-colors"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {socialIcons[social.platform] || (
-                      <span className="w-5 h-5 rounded-full bg-gray-300" />
-                    )}
-                  </Link>
-                ))}
-              </div>
-            </div>
-            
-            {/* Profile & Bio */}
-            <div className="flex gap-4">
-              {content.profileImage ? (
-                <Image
-                  src={content.profileImage}
-                  alt="Profile"
-                  width={80}
-                  height={80}
-                  className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
-                />
-              ) : (
-                <div className="w-20 h-20 rounded-lg bg-gray-200 flex-shrink-0" />
-              )}
-              <p className="text-sm text-gray-600 leading-relaxed">
-                {content.bio}
-              </p>
-            </div>
-          </div>
-          
           {/* Contact Form */}
-          <div id="contact-form" className="pt-8 border-t border-gray-200">
+          <div id="contact-form" className="p-8 md:p-10 bg-gray-50 rounded-2xl">
             <h3 className="text-xl font-semibold text-gray-900 mb-6">Send a Message</h3>
             
             {submitStatus === 'success' ? (
