@@ -114,11 +114,23 @@ function SectionEditorWrapper({
     case 'work':
       return <WorkEditor content={section.content as any} onSave={onSave} />
     case 'services':
-      return <ServicesEditor section={section} onSave={onSave} />
+      return (
+        <ServicesEditor 
+          content={section.content as any} 
+          sectionId={section.id} 
+          onSave={async (_sectionId, content) => onSave(content)} 
+        />
+      )
     case 'experience':
-      return <ExperienceEditor section={section} onSave={onSave} />
+      return (
+        <ExperienceEditor 
+          content={section.content as any} 
+          sectionId={section.id} 
+          onSave={async () => {}} 
+        />
+      )
     case 'faq':
-      return <FAQEditor section={section} onSave={onSave} />
+      return <FAQEditor content={section.content as any} onSave={onSave} />
     case 'contact':
       return <ContactEditor section={section} onSave={onSave} />
     default:
