@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 
-// Import cursor wrapper - uses dynamic import with ssr:false internally
+// Cursor wrapper handles dynamic import with ssr:false in a client component
 import { CursorWrapper } from '@/components/layout/cursor-wrapper'
 
 const _geist = Geist({ subsets: ["latin"] });
