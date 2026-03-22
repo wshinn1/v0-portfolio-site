@@ -6,6 +6,16 @@ export async function updateSession(request: NextRequest) {
     request,
   })
 
+  // Check if Supabase env vars are available
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  
+  if (!supabaseUrl || !supabaseAnonKey) {
+    // If no Supabase config, redirect to login with error or just continue
+    console.warn('Supabase environment variables not configured')
+    return supabaseResponse
+  }
+
   // With Fluid compute, don't put this client in a global environment
   // variable. Always create a new one on each request.
   const supabase = createServerClient(
