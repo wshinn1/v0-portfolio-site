@@ -1,12 +1,11 @@
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+import { NextResponse, type NextRequest } from 'next/server'
 
-export function middleware(request: NextRequest) {
+// Next.js middleware - runs on matched routes
+export const middleware = (request: NextRequest) => {
   return NextResponse.next()
 }
 
-export default middleware
-
+// Required config export
 export const config = {
   matcher: [],
 }
