@@ -132,7 +132,13 @@ function SectionEditorWrapper({
     case 'faq':
       return <FAQEditor content={section.content as any} onSave={onSave} />
     case 'contact':
-      return <ContactEditor section={section} onSave={onSave} />
+      return (
+        <ContactEditor 
+          content={section.content as any} 
+          sectionId={section.id} 
+          onSave={onSave} 
+        />
+      )
     default:
       return (
         <div className="p-4 bg-zinc-50 rounded-lg">
