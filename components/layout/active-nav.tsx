@@ -65,7 +65,7 @@ export function ActiveNav({ sections, primaryColor }: ActiveNavProps) {
             color: activeSection === section.section_type ? primaryColor : undefined
           }}
         >
-          {section.title}
+          {section.section_type === 'hero' ? 'Full Stack Engineer' : section.title}
         </a>
       ))}
     </nav>

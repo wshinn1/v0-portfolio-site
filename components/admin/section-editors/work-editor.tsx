@@ -11,7 +11,13 @@ interface WorkEditorProps {
 
 export function WorkEditor({ content: initialContent, onSave }: WorkEditorProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const [content, setContent] = useState<WorkContent>(initialContent)
+  const [content, setContent] = useState<WorkContent>({
+    label: initialContent?.label || '',
+    heading: initialContent?.heading || '',
+    viewAllText: initialContent?.viewAllText || 'View All',
+    categories: initialContent?.categories || [],
+    projects: initialContent?.projects || [],
+  })
   const [isSaving, setIsSaving] = useState(false)
   const [uploadingIndex, setUploadingIndex] = useState<number | null>(null)
 

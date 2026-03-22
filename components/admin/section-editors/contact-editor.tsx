@@ -13,7 +13,18 @@ interface ContactEditorProps {
 export function ContactEditor({ content, sectionId, onSave }: ContactEditorProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
-  const [formData, setFormData] = useState<ContactContent>(content)
+  const [formData, setFormData] = useState<ContactContent>({
+    logoText: content?.logoText || '',
+    heading: content?.heading || '',
+    ctaText: content?.ctaText || '',
+    phone: content?.phone || '',
+    email: content?.email || '',
+    profileImage: content?.profileImage || '',
+    bio: content?.bio || '',
+    socialLinks: content?.socialLinks || [],
+    copyright: content?.copyright || '',
+    footerLinks: content?.footerLinks || [],
+  })
   const [uploading, setUploading] = useState(false)
 
   const handleSave = async () => {

@@ -13,7 +13,21 @@ export function HeroEditor({ section, onSave }: HeroEditorProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
-  const [content, setContent] = useState<HeroContent>(section.content as HeroContent)
+  const sectionContent = section?.content as HeroContent | undefined
+  const [content, setContent] = useState<HeroContent>({
+    brandName: sectionContent?.brandName || '',
+    badge: sectionContent?.badge || '',
+    firstName: sectionContent?.firstName || '',
+    lastName: sectionContent?.lastName || '',
+    tagline: sectionContent?.tagline || '',
+    email: sectionContent?.email || '',
+    profileImage: sectionContent?.profileImage || '',
+    stats: sectionContent?.stats || { years: '', yearsLabel: '' },
+    awards: sectionContent?.awards || [],
+    topRatedOn: sectionContent?.topRatedOn || [],
+    socialLinks: sectionContent?.socialLinks || [],
+    ctaText: sectionContent?.ctaText || '',
+  })
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleSave = async () => {
@@ -143,6 +157,19 @@ export function HeroEditor({ section, onSave }: HeroEditorProps) {
       {/* Content */}
       {isExpanded && (
         <div className="p-6 space-y-6">
+          {/* Brand Name */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Brand Name / Logo Text</label>
+            <input
+              type="text"
+              value={content.brandName || ''}
+              onChange={(e) => updateField('brandName', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Your brand or company name"
+            />
+            <p className="text-xs text-gray-500 mt-1">This appears as the logo text in the header</p>
+          </div>
+
           {/* Basic Info */}
           <div className="grid grid-cols-2 gap-4">
             <div>

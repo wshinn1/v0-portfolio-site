@@ -63,6 +63,7 @@ export type SectionContent =
 
 // Hero Section
 export interface HeroContent {
+  brandName: string
   badge: string
   firstName: string
   lastName: string
