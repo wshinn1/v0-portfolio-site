@@ -1,8 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
+import { Loader2 } from "lucide-react"
 
 export default function AdminSignupPage() {
   const [email, setEmail] = useState("")
@@ -11,8 +12,27 @@ export default function AdminSignupPage() {
   const [error, setError] = useState("")
   const [success, setSuccess] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [checkingAdmin, setCheckingAdmin] = useState(true)
+  const [adminExists, setAdminExists] = useState(false)
   const router = useRouter()
   const supabase = createClient()
+
+  // Check if admin already exists on mount
+  useEffect(() => {
+    const checkAdmin = async () => {
+      try {
+        const res = await fetch('/api/admin/check')
+        const data = await res.json()
+        setAdminExists(data.adminExists)
+      } catch {
+        // If check fails, allow signup attempt
+        setAdminExists(false)
+      } finally {
+        setCheckingAdmin(false)
+      }
+    }
+    checkAdmin()
+  }, [])
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -51,6 +71,43 @@ export default function AdminSignupPage() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  // Show loading while checking admin status
+  if (checkingAdmin) {
+    return (
+      <div className="min-h-screen bg-zinc-900 flex items-center justify-center p-4">
+        <Loader2 className="w-8 h-8 text-white animate-spin" />
+      </div>
+    )
+  }
+
+  // Show message if admin already exists
+  if (adminExists) {
+    return (
+      <div className="min-h-screen bg-zinc-900 flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
+            <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m0 0v2m0-2h2m-2 0H10m5-6a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-bold text-zinc-900 mb-2">Admin Already Exists</h2>
+            <p className="text-zinc-500 mb-6">
+              An admin account has already been created. Only one admin is allowed.
+            </p>
+            <button
+              onClick={() => router.push("/admin/login")}
+              className="bg-zinc-900 text-white py-2 px-6 rounded-lg font-medium hover:bg-zinc-800 transition-colors"
+            >
+              Go to Login
+            </button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   if (success) {

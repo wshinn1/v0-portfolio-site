@@ -12,11 +12,19 @@ import {
   Plus, 
   Copy, 
   Trash2, 
-  GripVertical,
   ArrowUp,
   ArrowDown
 } from "lucide-react"
 import type { Section } from "@/lib/types/cms"
+
+// Import dedicated section editors
+import { HeroEditor } from "@/components/admin/section-editors/hero-editor"
+import { AboutEditor } from "@/components/admin/section-editors/about-editor"
+import { WorkEditor } from "@/components/admin/section-editors/work-editor"
+import { ServicesEditor } from "@/components/admin/section-editors/services-editor"
+import { ExperienceEditor } from "@/components/admin/section-editors/experience-editor"
+import { FAQEditor } from "@/components/admin/section-editors/faq-editor"
+import { ContactEditor } from "@/components/admin/section-editors/contact-editor"
 
 // Section type options for creating new sections
 const SECTION_TYPES = [
@@ -88,50 +96,38 @@ const DEFAULT_CONTENT: Record<string, Record<string, unknown>> = {
   }
 }
 
-// Section editor component
-function SectionEditor({ section, onUpdate }: { section: Section; onUpdate: (content: Record<string, unknown>) => void }) {
-  const content = section.content as Record<string, unknown>
+// Section editor component - uses dedicated editors for each section type
+function SectionEditorWrapper({ 
+  section, 
+  onSave 
+}: { 
+  section: Section
+  onSave: (content: Record<string, unknown>) => Promise<void>
+}) {
+  const baseType = section.section_type.split('_')[0]
   
-  return (
-    <div className="space-y-4">
-      {Object.entries(content).map(([key, value]) => {
-        if (typeof value === "object" && value !== null) {
-          return (
-            <div key={key} className="p-4 bg-zinc-50 rounded-lg">
-              <p className="text-sm font-medium text-zinc-700 mb-2 capitalize">{key.replace(/([A-Z])/g, ' $1')}</p>
-              <pre className="text-xs text-zinc-500 overflow-auto max-h-40">
-                {JSON.stringify(value, null, 2)}
-              </pre>
-              <p className="text-xs text-zinc-400 mt-2">Use the dedicated section editor for complex fields</p>
-            </div>
-          )
-        }
-        
-        return (
-          <div key={key}>
-            <label className="block text-sm font-medium text-zinc-700 mb-2 capitalize">
-              {key.replace(/([A-Z])/g, ' $1')}
-            </label>
-            {typeof value === "string" && value.length > 100 ? (
-              <textarea
-                value={value as string}
-                onChange={(e) => onUpdate({ ...content, [key]: e.target.value })}
-                rows={4}
-                className="w-full px-4 py-3 border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent resize-none"
-              />
-            ) : (
-              <input
-                type="text"
-                value={String(value)}
-                onChange={(e) => onUpdate({ ...content, [key]: e.target.value })}
-                className="w-full px-4 py-3 border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent"
-              />
-            )}
-          </div>
-        )
-      })}
-    </div>
-  )
+  switch (baseType) {
+    case 'hero':
+      return <HeroEditor section={section} onSave={onSave} />
+    case 'about':
+      return <AboutEditor section={section} onSave={onSave} />
+    case 'work':
+      return <WorkEditor content={section.content as any} onSave={onSave} />
+    case 'services':
+      return <ServicesEditor section={section} onSave={onSave} />
+    case 'experience':
+      return <ExperienceEditor section={section} onSave={onSave} />
+    case 'faq':
+      return <FAQEditor section={section} onSave={onSave} />
+    case 'contact':
+      return <ContactEditor section={section} onSave={onSave} />
+    default:
+      return (
+        <div className="p-4 bg-zinc-50 rounded-lg">
+          <p className="text-sm text-zinc-500">No editor available for this section type.</p>
+        </div>
+      )
+  }
 }
 
 export default function SectionsPage() {
@@ -525,12 +521,31 @@ export default function SectionsPage() {
               {/* Section Content Editor */}
               {isExpanded && (
                 <div className="p-6">
-                  <SectionEditor
-                    section={{
-                      ...section,
-                      content: pendingChanges[section.section_type] || section.content,
+                  <SectionEditorWrapper
+                    section={section}
+                    onSave={async (content) => {
+                      // Save directly to API
+                      try {
+                        const res = await fetch("/api/cms/sections", {
+                          method: "PUT",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            id: section.id,
+                            content,
+                          }),
+                        })
+                        
+                        if (res.ok) {
+                          setSections((prev) =>
+                            prev.map((s) =>
+                              s.id === section.id ? { ...s, content } : s
+                            )
+                          )
+                        }
+                      } catch (error) {
+                        console.error("Error saving section:", error)
+                      }
                     }}
-                    onUpdate={(content) => handleContentUpdate(section.section_type, content)}
                   />
                 </div>
               )}

@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { AboutContent, Section } from '@/lib/types/cms'
-import { ChevronDown, ChevronUp, Save, FileText, Link } from 'lucide-react'
+import { ChevronDown, ChevronUp, Save, FileText, Link, Upload, X, Loader2, File } from 'lucide-react'
 
 interface AboutEditorProps {
   section: Section
@@ -12,7 +12,9 @@ interface AboutEditorProps {
 export function AboutEditor({ section, onSave }: AboutEditorProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
   const [content, setContent] = useState<AboutContent>(section.content as AboutContent)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleSave = async () => {
     setIsSaving(true)
@@ -25,6 +27,46 @@ export function AboutEditor({ section, onSave }: AboutEditorProps) {
 
   const updateField = <K extends keyof AboutContent>(field: K, value: AboutContent[K]) => {
     setContent(prev => ({ ...prev, [field]: value }))
+  }
+
+  const handleResumeUpload = async (file: File) => {
+    if (!file) return
+
+    // Validate file type (only PDF)
+    if (file.type !== 'application/pdf') {
+      alert('Please upload a PDF file')
+      return
+    }
+
+    setIsUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        updateField('resumeUrl', data.url)
+      } else {
+        alert('Upload failed. Please try again.')
+      }
+    } catch (error) {
+      console.error('Upload failed:', error)
+      alert('Upload failed. Please try again.')
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
+  const removeResume = () => {
+    updateField('resumeUrl', '')
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
   }
 
   return (
@@ -130,15 +172,62 @@ export function AboutEditor({ section, onSave }: AboutEditorProps) {
                     placeholder="Download Resume"
                   />
                 </div>
+                
+                {/* Resume Upload */}
                 <div>
-                  <label className="block text-sm text-gray-600 mb-1">Resume URL</label>
-                  <input
-                    type="url"
-                    value={content.resumeUrl}
-                    onChange={(e) => updateField('resumeUrl', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="https://example.com/resume.pdf"
-                  />
+                  <label className="block text-sm text-gray-600 mb-2">Resume File (PDF)</label>
+                  
+                  {content.resumeUrl ? (
+                    <div className="flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg">
+                      <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                        <File className="w-5 h-5 text-red-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">Resume.pdf</p>
+                        <a 
+                          href={content.resumeUrl} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-xs text-blue-600 hover:underline"
+                        >
+                          View uploaded file
+                        </a>
+                      </div>
+                      <button
+                        onClick={removeResume}
+                        className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Remove resume"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors">
+                      {isUploading ? (
+                        <div className="flex flex-col items-center">
+                          <Loader2 className="w-8 h-8 text-gray-400 animate-spin mb-2" />
+                          <span className="text-sm text-gray-500">Uploading...</span>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center">
+                          <Upload className="w-8 h-8 text-gray-400 mb-2" />
+                          <span className="text-sm text-gray-500">Click to upload resume</span>
+                          <span className="text-xs text-gray-400 mt-1">PDF only, max 10MB</span>
+                        </div>
+                      )}
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="application/pdf"
+                        className="hidden"
+                        disabled={isUploading}
+                        onChange={(e) => {
+                          const file = e.target.files?.[0]
+                          if (file) handleResumeUpload(file)
+                        }}
+                      />
+                    </label>
+                  )}
                 </div>
               </div>
 

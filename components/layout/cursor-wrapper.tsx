@@ -1,6 +1,7 @@
 'use client'
 
 import dynamic from 'next/dynamic'
+import { usePathname } from 'next/navigation'
 
 // Dynamic import with ssr: false must be in a client component
 const CustomCursor = dynamic(
@@ -9,5 +10,12 @@ const CustomCursor = dynamic(
 )
 
 export function CursorWrapper() {
+  const pathname = usePathname()
+  
+  // Don't show custom cursor on admin pages
+  if (pathname?.startsWith('/admin')) {
+    return null
+  }
+  
   return <CustomCursor />
 }

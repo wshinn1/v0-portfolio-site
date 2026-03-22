@@ -1,85 +1,118 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 
 // Custom cursor with expanding effect on hover
-// This component is dynamically imported with ssr: false in layout.tsx
+// Uses refs and requestAnimationFrame for smooth 60fps performance
 export function CustomCursor() {
   const [shouldRender, setShouldRender] = useState(false)
-  const [position, setPosition] = useState({ x: 0, y: 0 })
   const [isHovering, setIsHovering] = useState(false)
-  const [isVisible, setIsVisible] = useState(false)
+  
+  const outerRef = useRef<HTMLDivElement>(null)
+  const innerRef = useRef<HTMLDivElement>(null)
+  const positionRef = useRef({ x: 0, y: 0 })
+  const rafRef = useRef<number | null>(null)
+  const isVisibleRef = useRef(false)
 
   // Only determine if we should render after mount (client-only)
   useEffect(() => {
-    // Check if NOT a touch device
     const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0
     if (!isTouch) {
       setShouldRender(true)
     }
   }, [])
 
-  // Mouse tracking
+  // Update cursor position directly via DOM (no React re-renders)
+  const updateCursorPosition = useCallback(() => {
+    if (outerRef.current && innerRef.current) {
+      const { x, y } = positionRef.current
+      outerRef.current.style.left = `${x}px`
+      outerRef.current.style.top = `${y}px`
+      innerRef.current.style.left = `${x}px`
+      innerRef.current.style.top = `${y}px`
+      
+      if (isVisibleRef.current) {
+        outerRef.current.style.opacity = '1'
+        innerRef.current.style.opacity = '1'
+      }
+    }
+    rafRef.current = null
+  }, [])
+
+  // Mouse tracking with requestAnimationFrame
   useEffect(() => {
     if (!shouldRender) return
 
     const handleMouseMove = (e: MouseEvent) => {
-      setPosition({ x: e.clientX, y: e.clientY })
-      if (!isVisible) setIsVisible(true)
+      positionRef.current = { x: e.clientX, y: e.clientY }
+      isVisibleRef.current = true
+      
+      // Only schedule one RAF at a time
+      if (!rafRef.current) {
+        rafRef.current = requestAnimationFrame(updateCursorPosition)
+      }
     }
 
-    const handleMouseEnter = () => setIsVisible(true)
-    const handleMouseLeave = () => setIsVisible(false)
+    const handleMouseLeave = () => {
+      isVisibleRef.current = false
+      if (outerRef.current && innerRef.current) {
+        outerRef.current.style.opacity = '0'
+        innerRef.current.style.opacity = '0'
+      }
+    }
 
-    window.addEventListener('mousemove', handleMouseMove)
-    document.addEventListener('mouseenter', handleMouseEnter)
+    window.addEventListener('mousemove', handleMouseMove, { passive: true })
     document.addEventListener('mouseleave', handleMouseLeave)
 
     return () => {
       window.removeEventListener('mousemove', handleMouseMove)
-      document.removeEventListener('mouseenter', handleMouseEnter)
       document.removeEventListener('mouseleave', handleMouseLeave)
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current)
+      }
     }
-  }, [shouldRender, isVisible])
+  }, [shouldRender, updateCursorPosition])
 
   // Track hover states on interactive elements
   useEffect(() => {
     if (!shouldRender) return
 
-    const addHoverListeners = () => {
-      const interactiveElements = document.querySelectorAll(
-        'a, button, [role="button"], input, textarea, select, [data-cursor-hover]'
-      )
+    const handleElementEnter = () => setIsHovering(true)
+    const handleElementLeave = () => setIsHovering(false)
 
-      const handleElementEnter = () => setIsHovering(true)
-      const handleElementLeave = () => setIsHovering(false)
-
-      interactiveElements.forEach((el) => {
-        el.addEventListener('mouseenter', handleElementEnter)
-        el.addEventListener('mouseleave', handleElementLeave)
+    const observer = new MutationObserver(() => {
+      // Re-attach listeners when DOM changes
+      document.querySelectorAll('a, button, [role="button"], input, textarea, select').forEach((el) => {
+        el.removeEventListener('mouseenter', handleElementEnter)
+        el.removeEventListener('mouseleave', handleElementLeave)
+        el.addEventListener('mouseenter', handleElementEnter, { passive: true })
+        el.addEventListener('mouseleave', handleElementLeave, { passive: true })
       })
+    })
 
-      return () => {
-        interactiveElements.forEach((el) => {
-          el.removeEventListener('mouseenter', handleElementEnter)
-          el.removeEventListener('mouseleave', handleElementLeave)
-        })
-      }
+    // Initial attachment
+    document.querySelectorAll('a, button, [role="button"], input, textarea, select').forEach((el) => {
+      el.addEventListener('mouseenter', handleElementEnter, { passive: true })
+      el.addEventListener('mouseleave', handleElementLeave, { passive: true })
+    })
+
+    observer.observe(document.body, { childList: true, subtree: true })
+
+    return () => {
+      observer.disconnect()
+      document.querySelectorAll('a, button, [role="button"], input, textarea, select').forEach((el) => {
+        el.removeEventListener('mouseenter', handleElementEnter)
+        el.removeEventListener('mouseleave', handleElementLeave)
+      })
     }
-
-    // Run after a short delay to ensure DOM is ready
-    const timeout = setTimeout(addHoverListeners, 100)
-    return () => clearTimeout(timeout)
   }, [shouldRender])
 
-  // Return null on server AND on initial client render to prevent hydration mismatch
   if (!shouldRender) {
     return null
   }
 
   return (
     <>
-      {/* Hide default cursor via inline style to avoid styled-jsx hydration issues */}
       <style dangerouslySetInnerHTML={{
         __html: `
           @media (hover: hover) and (pointer: fine) {
@@ -88,32 +121,38 @@ export function CustomCursor() {
         `
       }} />
 
-      {/* Outer ring - expands on hover */}
+      {/* Outer ring */}
       <div
-        className="fixed pointer-events-none z-[9999] rounded-full border-2 transition-all duration-300 ease-out"
+        ref={outerRef}
+        className="fixed pointer-events-none z-[9999] rounded-full border-2"
         style={{
-          left: position.x,
-          top: position.y,
+          left: 0,
+          top: 0,
           width: isHovering ? 48 : 32,
           height: isHovering ? 48 : 32,
           transform: 'translate(-50%, -50%)',
-          opacity: isVisible ? 1 : 0,
+          opacity: 0,
           backgroundColor: isHovering ? 'rgba(255, 107, 74, 0.1)' : 'transparent',
           borderColor: isHovering ? '#ff6b4a' : '#1a1a1a',
+          transition: 'width 0.2s, height 0.2s, background-color 0.2s, border-color 0.2s',
+          willChange: 'left, top',
         }}
       />
 
       {/* Inner dot */}
       <div
-        className="fixed pointer-events-none z-[9999] rounded-full transition-all duration-150 ease-out"
+        ref={innerRef}
+        className="fixed pointer-events-none z-[9999] rounded-full"
         style={{
-          left: position.x,
-          top: position.y,
+          left: 0,
+          top: 0,
           width: isHovering ? 6 : 4,
           height: isHovering ? 6 : 4,
           transform: 'translate(-50%, -50%)',
-          opacity: isVisible ? 1 : 0,
+          opacity: 0,
           backgroundColor: isHovering ? '#ff6b4a' : '#1a1a1a',
+          transition: 'width 0.15s, height 0.15s, background-color 0.15s',
+          willChange: 'left, top',
         }}
       />
     </>
