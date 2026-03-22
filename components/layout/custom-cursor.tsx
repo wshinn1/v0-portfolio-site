@@ -1,25 +1,26 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 
 export function CustomCursor() {
+  // Start with null to match server render - component renders nothing initially
+  const [shouldRender, setShouldRender] = useState(false)
   const [position, setPosition] = useState({ x: 0, y: 0 })
   const [isHovering, setIsHovering] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
-  const [isTouchDevice, setIsTouchDevice] = useState(false)
 
+  // Only determine if we should render after mount (client-only)
   useEffect(() => {
-    // Check if touch device
-    const checkTouchDevice = () => {
-      setIsTouchDevice(
-        'ontouchstart' in window || 
-        navigator.maxTouchPoints > 0
-      )
+    // Check if NOT a touch device
+    const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+    if (!isTouch) {
+      setShouldRender(true)
     }
-    checkTouchDevice()
+  }, [])
 
-    // Don't show custom cursor on touch devices
-    if (isTouchDevice) return
+  // Mouse tracking
+  useEffect(() => {
+    if (!shouldRender) return
 
     const handleMouseMove = (e: MouseEvent) => {
       setPosition({ x: e.clientX, y: e.clientY })
@@ -38,51 +39,57 @@ export function CustomCursor() {
       document.removeEventListener('mouseenter', handleMouseEnter)
       document.removeEventListener('mouseleave', handleMouseLeave)
     }
-  }, [isVisible, isTouchDevice])
+  }, [shouldRender, isVisible])
 
   // Track hover states on interactive elements
   useEffect(() => {
-    if (isTouchDevice) return
+    if (!shouldRender) return
 
-    const interactiveElements = document.querySelectorAll(
-      'a, button, [role="button"], input, textarea, select, [data-cursor-hover]'
-    )
+    const addHoverListeners = () => {
+      const interactiveElements = document.querySelectorAll(
+        'a, button, [role="button"], input, textarea, select, [data-cursor-hover]'
+      )
 
-    const handleElementEnter = () => setIsHovering(true)
-    const handleElementLeave = () => setIsHovering(false)
+      const handleElementEnter = () => setIsHovering(true)
+      const handleElementLeave = () => setIsHovering(false)
 
-    interactiveElements.forEach((el) => {
-      el.addEventListener('mouseenter', handleElementEnter)
-      el.addEventListener('mouseleave', handleElementLeave)
-    })
-
-    return () => {
       interactiveElements.forEach((el) => {
-        el.removeEventListener('mouseenter', handleElementEnter)
-        el.removeEventListener('mouseleave', handleElementLeave)
+        el.addEventListener('mouseenter', handleElementEnter)
+        el.addEventListener('mouseleave', handleElementLeave)
       })
-    }
-  }, [isTouchDevice])
 
-  // Don't render on touch devices or server
-  if (isTouchDevice || typeof window === 'undefined') {
+      return () => {
+        interactiveElements.forEach((el) => {
+          el.removeEventListener('mouseenter', handleElementEnter)
+          el.removeEventListener('mouseleave', handleElementLeave)
+        })
+      }
+    }
+
+    // Run after a short delay to ensure DOM is ready
+    const timeout = setTimeout(addHoverListeners, 100)
+    return () => clearTimeout(timeout)
+  }, [shouldRender])
+
+  // Return null on server AND on initial client render to prevent hydration mismatch
+  if (!shouldRender) {
     return null
   }
 
   return (
     <>
-      {/* Hide default cursor */}
-      <style jsx global>{`
-        @media (hover: hover) and (pointer: fine) {
-          * {
-            cursor: none !important;
+      {/* Hide default cursor via inline style to avoid styled-jsx hydration issues */}
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @media (hover: hover) and (pointer: fine) {
+            * { cursor: none !important; }
           }
-        }
-      `}</style>
+        `
+      }} />
 
       {/* Outer ring - expands on hover */}
       <div
-        className="fixed pointer-events-none z-[9999] rounded-full border-2 border-gray-800 transition-all duration-300 ease-out"
+        className="fixed pointer-events-none z-[9999] rounded-full border-2 transition-all duration-300 ease-out"
         style={{
           left: position.x,
           top: position.y,
@@ -97,7 +104,7 @@ export function CustomCursor() {
 
       {/* Inner dot */}
       <div
-        className="fixed pointer-events-none z-[9999] rounded-full bg-gray-800 transition-all duration-150 ease-out"
+        className="fixed pointer-events-none z-[9999] rounded-full transition-all duration-150 ease-out"
         style={{
           left: position.x,
           top: position.y,

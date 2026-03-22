@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { getCMSData } from '@/lib/cms/get-cms-data'
 import { TypographyProvider } from '@/components/cms/typography-provider'
 import { HeroSection } from '@/components/sections/hero-section'
@@ -12,6 +13,27 @@ import { ActiveNav } from '@/components/layout/active-nav'
 import type { HeroContent, AboutContent, WorkContent, ServicesContent, ExperienceContent, FAQContent, ContactContent } from '@/lib/types/cms'
 
 export const revalidate = 60 // Revalidate every 60 seconds
+
+// Dynamic SEO metadata from CMS
+export async function generateMetadata(): Promise<Metadata> {
+  const { siteSettings } = await getCMSData()
+  
+  return {
+    title: siteSettings?.site_name || 'Portfolio',
+    description: siteSettings?.meta_description || 'Professional portfolio showcasing creative work and services',
+    icons: siteSettings?.favicon_url ? { icon: siteSettings.favicon_url } : undefined,
+    openGraph: {
+      title: siteSettings?.site_name || 'Portfolio',
+      description: siteSettings?.meta_description || 'Professional portfolio showcasing creative work and services',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: siteSettings?.site_name || 'Portfolio',
+      description: siteSettings?.meta_description || 'Professional portfolio showcasing creative work and services',
+    },
+  }
+}
 
 export default async function HomePage() {
   const { typography, siteSettings, sections } = await getCMSData()
