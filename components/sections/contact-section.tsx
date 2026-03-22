@@ -104,18 +104,11 @@ export function ContactSection({ content, primaryColor = '#ff6b4a', copyrightTex
         
         {/* Right side - Content */}
         <div className="lg:w-2/3 space-y-10">
-          {/* Heading and CTA */}
-          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+          {/* Heading */}
+          <div>
             <h2 className="text-2xl md:text-3xl font-semibold text-gray-900 max-w-lg leading-tight">
               {content.heading}
             </h2>
-            <Link
-              href="#contact-form"
-              className="inline-flex items-center justify-center px-6 py-3 rounded-full text-white font-medium transition-opacity hover:opacity-90 whitespace-nowrap"
-              style={{ backgroundColor: primaryColor }}
-            >
-              {content.ctaText}
-            </Link>
           </div>
           
           {/* Contact Form */}
