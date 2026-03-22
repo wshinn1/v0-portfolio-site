@@ -7,6 +7,7 @@ import { ServicesSection } from '@/components/sections/services-section'
 import { ExperienceSection } from '@/components/sections/experience-section'
 import { FAQSection } from '@/components/sections/faq-section'
 import { ContactSection } from '@/components/sections/contact-section'
+import { MobileMenu } from '@/components/layout/mobile-menu'
 import type { HeroContent, AboutContent, WorkContent, ServicesContent, ExperienceContent, FAQContent, ContactContent } from '@/lib/types/cms'
 
 export const revalidate = 60 // Revalidate every 60 seconds
@@ -39,35 +40,41 @@ export default async function HomePage() {
   return (
     <TypographyProvider typography={typography}>
       <main 
-        className="min-h-screen"
+        className="min-h-screen scroll-smooth"
         style={{ backgroundColor: siteSettings?.background_color || '#f5f5f5' }}
       >
-        {/* Fixed Left Sidebar - will be built in Phase 11 */}
+        {/* Mobile Menu */}
+        <MobileMenu 
+          sections={sections.map(s => ({ id: s.id, section_type: s.section_type, title: s.title || s.section_type }))}
+          siteName={siteSettings?.site_name || 'Worq'}
+          primaryColor={siteSettings?.primary_color || '#ff6b4a'}
+        />
+
+        {/* Fixed Left Sidebar - Desktop Only */}
         <div className="flex">
-          {/* Placeholder for sidebar */}
-          <aside className="hidden lg:block w-[35%] min-h-screen fixed left-0 top-0 border-r border-gray-200 bg-inherit p-8">
+          <aside className="hidden lg:block w-[22%] min-w-[200px] max-w-[280px] min-h-screen fixed left-0 top-0 border-r border-gray-200 bg-inherit p-6">
             <div className="h-full flex flex-col justify-between">
               <div>
-                {/* Logo placeholder */}
+                {/* Logo */}
                 <span 
-                  className="text-2xl font-bold italic"
+                  className="text-xl font-bold italic"
                   style={{ color: siteSettings?.primary_color || '#ff6b4a' }}
                 >
                   {siteSettings?.site_name || 'Worq'}
                 </span>
               </div>
-              <nav className="space-y-4">
+              <nav className="space-y-3">
                 {sections.map((section) => (
                   <a 
                     key={section.id}
                     href={`#${section.section_type}`}
-                    className="block text-gray-600 hover:text-gray-900 transition-colors"
+                    className="block text-sm text-gray-600 hover:text-gray-900 transition-colors"
                   >
                     {section.title}
                   </a>
                 ))}
               </nav>
-              <div className="text-sm text-gray-500">
+              <div className="text-xs text-gray-500">
                 <a href="/admin" className="hover:text-gray-700">
                   Admin Panel
                 </a>
@@ -76,7 +83,7 @@ export default async function HomePage() {
           </aside>
 
           {/* Main Content Area */}
-          <div className="w-full lg:w-[65%] lg:ml-[35%] min-h-screen">
+          <div className="w-full lg:w-[78%] lg:ml-[22%] min-h-screen pt-16 lg:pt-0">
             <div className="p-8 lg:p-16">
               {/* Hero Section */}
               {heroContent && siteSettings && (
