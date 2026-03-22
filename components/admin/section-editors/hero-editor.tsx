@@ -96,13 +96,24 @@ export function HeroEditor({ section, onSave }: HeroEditorProps) {
     }
   }
 
-  const handlePlatformToggle = (platform: string) => {
-    const current = content.topRatedOn || []
-    if (current.includes(platform)) {
-      updateField('topRatedOn', current.filter(p => p !== platform))
-    } else {
-      updateField('topRatedOn', [...current, platform])
-    }
+  const handleSocialLinkChange = (index: number, field: 'platform' | 'url', value: string) => {
+    const newLinks = [...(content.socialLinks || [])]
+    newLinks[index] = { ...newLinks[index], [field]: value }
+    setContent(prev => ({ ...prev, socialLinks: newLinks }))
+  }
+
+  const addSocialLink = () => {
+    setContent(prev => ({
+      ...prev,
+      socialLinks: [...(prev.socialLinks || []), { platform: 'linkedin', url: '' }]
+    }))
+  }
+
+  const removeSocialLink = (index: number) => {
+    setContent(prev => ({
+      ...prev,
+      socialLinks: (prev.socialLinks || []).filter((_, i) => i !== index)
+    }))
   }
 
   return (
@@ -290,23 +301,56 @@ export function HeroEditor({ section, onSave }: HeroEditorProps) {
             </div>
           </div>
 
-          {/* Top Rated Platforms */}
+          {/* Social Links (View At) */}
           <div className="border-t pt-6">
-            <h4 className="text-sm font-semibold text-gray-900 mb-4">Top Rated On</h4>
-            <div className="flex flex-wrap gap-2">
-              {['dribbble', 'behance', 'upwork'].map((platform) => (
-                <button
-                  key={platform}
-                  onClick={() => handlePlatformToggle(platform)}
-                  className={`px-4 py-2 rounded-lg border transition-colors capitalize ${
-                    content.topRatedOn?.includes(platform)
-                      ? 'bg-blue-50 border-blue-500 text-blue-700'
-                      : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  {platform}
-                </button>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h4 className="text-sm font-semibold text-gray-900">Social Links (View At)</h4>
+                <p className="text-xs text-gray-500 mt-1">Links shown in the "View At:" section</p>
+              </div>
+              <button
+                onClick={addSocialLink}
+                className="inline-flex items-center gap-1 px-3 py-1 text-sm bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100"
+              >
+                <Plus className="w-4 h-4" />
+                Add Link
+              </button>
+            </div>
+            <div className="space-y-3">
+              {(content.socialLinks || []).map((link, index) => (
+                <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                  <div className="w-32">
+                    <select
+                      value={link.platform}
+                      onChange={(e) => handleSocialLinkChange(index, 'platform', e.target.value)}
+                      className="w-full px-2 py-2 text-sm border border-gray-300 rounded-lg"
+                    >
+                      <option value="linkedin">LinkedIn</option>
+                      <option value="twitter">Twitter/X</option>
+                      <option value="github">GitHub</option>
+                      <option value="dribbble">Dribbble</option>
+                    </select>
+                  </div>
+                  <div className="flex-1">
+                    <input
+                      type="url"
+                      value={link.url}
+                      onChange={(e) => handleSocialLinkChange(index, 'url', e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg"
+                      placeholder="https://linkedin.com/in/yourprofile"
+                    />
+                  </div>
+                  <button
+                    onClick={() => removeSocialLink(index)}
+                    className="p-2 text-red-500 hover:bg-red-50 rounded-lg"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               ))}
+              {(!content.socialLinks || content.socialLinks.length === 0) && (
+                <p className="text-sm text-gray-400 text-center py-4">No social links added yet. Click "Add Link" to add one.</p>
+              )}
             </div>
           </div>
 

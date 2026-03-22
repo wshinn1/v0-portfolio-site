@@ -79,6 +79,10 @@ export interface HeroContent {
     subtitle: string
   }[]
   topRatedOn: string[]
+  socialLinks: {
+    platform: string
+    url: string
+  }[]
   ctaText: string
 }
 
