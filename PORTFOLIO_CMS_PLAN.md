@@ -38,13 +38,16 @@ A single-page portfolio website with a full CMS backend that allows editing of a
 ## Phase Breakdown
 
 ### Phase 1: Foundation & Database Setup
-**Goal**: Set up database schema and basic project structure
+**Goal**: Set up database schema, Supabase client, and basic project structure
 
-- [ ] Connect database integration (Supabase or Neon)
-- [ ] Create database schema for:
-  - `site_settings` (global settings, typography)
-  - `sections` (section data with JSON content)
+- [x] Connect Supabase integration (CONNECTED)
+- [x] Connect Vercel Blob integration (CONNECTED)
+- [ ] Set up Supabase client files (`lib/supabase/client.ts`, `lib/supabase/server.ts`)
+- [ ] Create database schema with RLS:
   - `typography` (H1, H2, H3, body, small - font family, size, weight, color)
+  - `site_settings` (global settings)
+  - `sections` (section data with JSON content)
+- [ ] Create Blob upload API route (`/api/upload`)
 - [ ] Create initial seed data
 - [ ] Set up API routes for CRUD operations
 
@@ -247,43 +250,63 @@ A single-page portfolio website with a full CMS backend that allows editing of a
 
 ---
 
-## Database Schema (Draft)
+## Database Schema (Final)
 
 ```sql
--- Typography settings
+-- Typography settings (no RLS - public read, admin write via service role)
 CREATE TABLE typography (
-  id UUID PRIMARY KEY,
-  element_type VARCHAR(20), -- h1, h2, h3, body, small
-  font_family VARCHAR(100),
-  font_size VARCHAR(20),
-  font_weight VARCHAR(10),
-  line_height VARCHAR(10),
-  letter_spacing VARCHAR(20),
-  color VARCHAR(20),
-  updated_at TIMESTAMP
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  element_type VARCHAR(20) UNIQUE NOT NULL, -- h1, h2, h3, body, small, label
+  font_family VARCHAR(100) DEFAULT 'Inter',
+  font_size VARCHAR(20) DEFAULT '16px',
+  font_weight VARCHAR(10) DEFAULT '400',
+  line_height VARCHAR(10) DEFAULT '1.5',
+  letter_spacing VARCHAR(20) DEFAULT 'normal',
+  color VARCHAR(20) DEFAULT '#1a1a1a',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Site settings
+-- Site settings (single row for global config)
 CREATE TABLE site_settings (
-  id UUID PRIMARY KEY,
-  site_name VARCHAR(100),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  site_name VARCHAR(100) DEFAULT 'Portfolio',
+  logo_url TEXT,
   favicon_url TEXT,
   meta_description TEXT,
-  primary_color VARCHAR(20),
-  secondary_color VARCHAR(20),
-  background_color VARCHAR(20),
-  updated_at TIMESTAMP
+  primary_color VARCHAR(20) DEFAULT '#ff6b4a',
+  secondary_color VARCHAR(20) DEFAULT '#1a1a1a',
+  background_color VARCHAR(20) DEFAULT '#f5f5f5',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Sections (flexible JSON storage)
+-- Sections (flexible JSON storage for all section content)
 CREATE TABLE sections (
-  id UUID PRIMARY KEY,
-  section_type VARCHAR(50), -- hero, about, work, services, etc.
-  content JSONB, -- All section-specific data
-  sort_order INTEGER,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  section_type VARCHAR(50) UNIQUE NOT NULL, -- hero, about, work, services, experience, faq, contact
+  title VARCHAR(100), -- Display title for admin
+  content JSONB NOT NULL DEFAULT '{}', -- All section-specific data
+  sort_order INTEGER DEFAULT 0,
   is_visible BOOLEAN DEFAULT true,
-  updated_at TIMESTAMP
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Enable RLS on all tables (public read, authenticated write)
+ALTER TABLE typography ENABLE ROW LEVEL SECURITY;
+ALTER TABLE site_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE sections ENABLE ROW LEVEL SECURITY;
+
+-- Public read policies (frontend can read all data)
+CREATE POLICY "Public read typography" ON typography FOR SELECT USING (true);
+CREATE POLICY "Public read site_settings" ON site_settings FOR SELECT USING (true);
+CREATE POLICY "Public read sections" ON sections FOR SELECT USING (true);
+
+-- Authenticated write policies (admin can modify)
+CREATE POLICY "Auth write typography" ON typography FOR ALL USING (auth.role() = 'authenticated');
+CREATE POLICY "Auth write site_settings" ON site_settings FOR ALL USING (auth.role() = 'authenticated');
+CREATE POLICY "Auth write sections" ON sections FOR ALL USING (auth.role() = 'authenticated');
 ```
 
 ---
@@ -291,7 +314,9 @@ CREATE TABLE sections (
 ## Tech Stack
 
 - **Framework**: Next.js 16 (App Router)
-- **Database**: Supabase or Neon (PostgreSQL)
+- **Database**: Supabase (PostgreSQL with RLS)
+- **File Storage**: Vercel Blob (private access)
+- **Auth**: Supabase Auth (for admin protection)
 - **Styling**: Tailwind CSS
 - **UI Components**: shadcn/ui
 - **Fonts**: Google Fonts (dynamically loaded)
