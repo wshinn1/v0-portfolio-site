@@ -70,14 +70,7 @@ export function MobileMenu({ sections, siteName, primaryColor }: MobileMenuProps
               {section.title}
             </button>
           ))}
-          <div className="pt-4 border-t border-gray-200">
-            <a 
-              href="/admin" 
-              className="text-sm text-gray-500 hover:text-gray-700"
-            >
-              Admin Panel
-            </a>
-          </div>
+
         </div>
       </nav>
     </>

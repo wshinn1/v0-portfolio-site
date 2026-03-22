@@ -1,12 +1,15 @@
 'use client'
 
+import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { Loader2, CheckCircle, AlertCircle } from 'lucide-react'
 import type { ContactContent } from '@/lib/types/cms'
 
 interface ContactSectionProps {
   content: ContactContent
   primaryColor?: string
+  copyrightText?: string | null
 }
 
 // Social icons as inline SVGs
@@ -38,7 +41,54 @@ const socialIcons: Record<string, React.ReactNode> = {
   ),
 }
 
-export function ContactSection({ content, primaryColor = '#ff6b4a' }: ContactSectionProps) {
+export function ContactSection({ content, primaryColor = '#ff6b4a', copyrightText }: ContactSectionProps) {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    message: '',
+  })
+  const [isHuman, setIsHuman] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const [errorMessage, setErrorMessage] = useState('')
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!isHuman) {
+      setErrorMessage('Please confirm you are human with a brain and heart')
+      setSubmitStatus('error')
+      return
+    }
+
+    setIsSubmitting(true)
+    setSubmitStatus('idle')
+    setErrorMessage('')
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      })
+
+      if (response.ok) {
+        setSubmitStatus('success')
+        setFormData({ name: '', email: '', message: '' })
+        setIsHuman(false)
+      } else {
+        const data = await response.json()
+        setErrorMessage(data.error || 'Failed to send message')
+        setSubmitStatus('error')
+      }
+    } catch {
+      setErrorMessage('Something went wrong. Please try again.')
+      setSubmitStatus('error')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   return (
     <section id="contact" className="py-20 bg-white">
       <div className="flex flex-col lg:flex-row gap-12">
@@ -68,76 +118,114 @@ export function ContactSection({ content, primaryColor = '#ff6b4a' }: ContactSec
             </Link>
           </div>
           
-          {/* Contact Info Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Phone & Email */}
-            <div className="space-y-6">
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Contact us</p>
-                <p className="text-gray-900 font-medium">{content.phone}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Email</p>
-                <p className="text-gray-900 font-medium">{content.email}</p>
-              </div>
-            </div>
+          {/* Contact Form */}
+          <div id="contact-form" className="p-8 md:p-10 bg-gray-50 rounded-2xl">
+            <h3 className="text-xl font-semibold text-gray-900 mb-6">Send a Message</h3>
             
-            {/* Social Links */}
-            <div>
-              <p className="text-sm text-gray-500 mb-3">Follow us</p>
-              <div className="flex items-center gap-4">
-                {content.socialLinks.map((social, index) => (
-                  <Link
-                    key={index}
-                    href={social.url || '#'}
-                    className="text-gray-700 hover:text-gray-900 transition-colors"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {socialIcons[social.platform] || (
-                      <span className="w-5 h-5 rounded-full bg-gray-300" />
-                    )}
-                  </Link>
-                ))}
+            {submitStatus === 'success' ? (
+              <div className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-xl">
+                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                <p className="text-green-800">Thank you! Your message has been sent successfully.</p>
               </div>
-            </div>
-            
-            {/* Profile & Bio */}
-            <div className="flex gap-4">
-              {content.profileImage ? (
-                <Image
-                  src={content.profileImage}
-                  alt="Profile"
-                  width={80}
-                  height={80}
-                  className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
-                />
-              ) : (
-                <div className="w-20 h-20 rounded-lg bg-gray-200 flex-shrink-0" />
-              )}
-              <p className="text-sm text-gray-600 leading-relaxed">
-                {content.bio}
-              </p>
-            </div>
-          </div>
-          
-          {/* Footer */}
-          <div className="pt-8 border-t border-gray-200 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div className="text-sm text-gray-500">
-              <p>{content.copyright}</p>
-              <p>Work by Onmix. Made with Webflow.</p>
-            </div>
-            <div className="flex items-center gap-6">
-              {content.footerLinks.map((link, index) => (
-                <Link
-                  key={index}
-                  href={link.url || '#'}
-                  className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-5">
+                {/* Name Field */}
+                <div>
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                    Name
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    required
+                    value={formData.name}
+                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-shadow"
+                    style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
+                    placeholder="Your name"
+                  />
+                </div>
+
+                {/* Email Field */}
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    required
+                    value={formData.email}
+                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-shadow"
+                    style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
+                    placeholder="your@email.com"
+                  />
+                </div>
+
+                {/* Message Field */}
+                <div>
+                  <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
+                    Message
+                  </label>
+                  <textarea
+                    id="message"
+                    required
+                    rows={5}
+                    value={formData.message}
+                    onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-shadow resize-none"
+                    style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
+                    placeholder="Tell me about your project or just say hello..."
+                  />
+                </div>
+
+                {/* Human Checkbox */}
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    id="human"
+                    checked={isHuman}
+                    onChange={(e) => setIsHuman(e.target.checked)}
+                    className="mt-1 w-5 h-5 rounded border-gray-300 focus:ring-2"
+                    style={{ accentColor: primaryColor }}
+                  />
+                  <label htmlFor="human" className="text-sm text-gray-600 leading-relaxed">
+                    I acknowledge that I am a human being with a brain and a heart.
+                  </label>
+                </div>
+
+                {/* Error Message */}
+                {submitStatus === 'error' && (
+                  <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-xl">
+                    <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+                    <p className="text-red-800">{errorMessage}</p>
+                  </div>
+                )}
+
+                {/* Submit Button */}
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full md:w-auto px-8 py-3 rounded-full text-white font-medium transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  style={{ backgroundColor: primaryColor }}
                 >
-                  {link.label}
-                </Link>
-              ))}
-            </div>
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    'Send Message'
+                  )}
+                </button>
+              </form>
+            )}
+          </div>
+
+          {/* Footer */}
+          <div className="pt-8 border-t border-gray-200">
+            <p className="text-sm text-gray-500">{copyrightText || content.copyright}</p>
           </div>
         </div>
       </div>

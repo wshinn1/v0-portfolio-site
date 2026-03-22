@@ -90,11 +90,7 @@ export default async function HomePage() {
                 sections={sections.map(s => ({ id: s.id, section_type: s.section_type, title: s.title || s.section_type }))}
                 primaryColor={siteSettings?.primary_color || '#ff6b4a'}
               />
-              <div className="text-xs text-gray-500">
-                <a href="/admin" className="hover:text-gray-700">
-                  Admin Panel
-                </a>
-              </div>
+              <div className="text-xs text-gray-500" />
             </div>
           </aside>
 
@@ -142,6 +138,7 @@ export default async function HomePage() {
                 <ContactSection 
                   content={contactContent} 
                   primaryColor={siteSettings.primary_color}
+                  copyrightText={siteSettings.copyright_text}
                 />
               )}
             </div>

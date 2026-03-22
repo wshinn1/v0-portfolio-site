@@ -1,15 +1,18 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Loader2, Save, Upload } from "lucide-react"
+import { Loader2, Save, Upload, Image, X } from "lucide-react"
+import { useRef, useState as useStateRef } from "react"
 import type { SiteSettings } from "@/lib/types/cms"
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState<SiteSettings | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const [isUploadingOG, setIsUploadingOG] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const ogImageInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     async function fetchSettings() {
@@ -59,9 +62,43 @@ export default function SettingsPage() {
     }
   }
 
-  const updateField = (field: keyof SiteSettings, value: string) => {
+  const updateField = (field: keyof SiteSettings, value: string | null) => {
     if (!settings) return
     setSettings({ ...settings, [field]: value })
+  }
+
+  const handleOGImageUpload = async (file: File) => {
+    if (!file) return
+
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp']
+    if (!validTypes.includes(file.type)) {
+      setError('Please upload a JPEG, PNG, or WebP image')
+      return
+    }
+
+    setIsUploadingOG(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        updateField('og_image', data.url)
+      } else {
+        setError('Upload failed. Please try again.')
+      }
+    } catch (err) {
+      console.error('Upload failed:', err)
+      setError('Upload failed. Please try again.')
+    } finally {
+      setIsUploadingOG(false)
+    }
   }
 
   if (isLoading) {
@@ -188,6 +225,151 @@ export default function SettingsPage() {
                 placeholder="https://..."
               />
             </div>
+          </div>
+        </div>
+
+        {/* Social Sharing / Open Graph */}
+        <div className="bg-white rounded-xl border border-zinc-200 p-6">
+          <h2 className="text-xl font-semibold text-zinc-900 mb-2">Social Sharing</h2>
+          <p className="text-sm text-zinc-500 mb-6">
+            Customize how your portfolio appears when shared on social media
+          </p>
+          
+          <div className="space-y-6">
+            {/* OG Title */}
+            <div>
+              <label className="block text-sm font-medium text-zinc-700 mb-2">
+                Share Title
+              </label>
+              <input
+                type="text"
+                value={settings.og_title || ""}
+                onChange={(e) => updateField("og_title", e.target.value)}
+                className="w-full px-4 py-3 border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent"
+                placeholder="My Portfolio - Designer & Developer"
+              />
+              <p className="text-xs text-zinc-400 mt-1">
+                The title shown when your site is shared. Falls back to Site Name if empty.
+              </p>
+            </div>
+
+            {/* OG Description */}
+            <div>
+              <label className="block text-sm font-medium text-zinc-700 mb-2">
+                Share Description
+              </label>
+              <textarea
+                value={settings.og_description || ""}
+                onChange={(e) => updateField("og_description", e.target.value)}
+                rows={3}
+                className="w-full px-4 py-3 border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent resize-none"
+                placeholder="A brief description that appears when shared on social media..."
+              />
+              <p className="text-xs text-zinc-400 mt-1">
+                Falls back to Meta Description if empty.
+              </p>
+            </div>
+
+            {/* OG Image Upload */}
+            <div>
+              <label className="block text-sm font-medium text-zinc-700 mb-2">
+                Share Image
+              </label>
+              <p className="text-xs text-zinc-400 mb-3">
+                Recommended size: 1200x630 pixels. This image appears when your site is shared on social media.
+              </p>
+              
+              {settings.og_image ? (
+                <div className="relative">
+                  <img
+                    src={settings.og_image}
+                    alt="OG Image preview"
+                    className="w-full max-w-lg rounded-lg border border-zinc-200"
+                  />
+                  <button
+                    onClick={() => updateField('og_image', null)}
+                    className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                    title="Remove image"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center w-full max-w-lg h-40 border-2 border-dashed border-zinc-300 rounded-lg cursor-pointer hover:bg-zinc-50 transition-colors">
+                  {isUploadingOG ? (
+                    <div className="flex flex-col items-center">
+                      <Loader2 className="w-8 h-8 text-zinc-400 animate-spin mb-2" />
+                      <span className="text-sm text-zinc-500">Uploading...</span>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center">
+                      <Image className="w-8 h-8 text-zinc-400 mb-2" />
+                      <span className="text-sm text-zinc-500">Click to upload share image</span>
+                      <span className="text-xs text-zinc-400 mt-1">JPEG, PNG, or WebP</span>
+                    </div>
+                  )}
+                  <input
+                    ref={ogImageInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    className="hidden"
+                    disabled={isUploadingOG}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (file) handleOGImageUpload(file)
+                    }}
+                  />
+                </label>
+              )}
+            </div>
+
+            {/* Preview */}
+            {(settings.og_title || settings.og_description || settings.og_image) && (
+              <div className="mt-6 p-4 bg-zinc-50 rounded-lg">
+                <p className="text-xs text-zinc-500 mb-3">Preview (approximate):</p>
+                <div className="bg-white border border-zinc-200 rounded-lg overflow-hidden max-w-md">
+                  {settings.og_image && (
+                    <img
+                      src={settings.og_image}
+                      alt="Preview"
+                      className="w-full h-40 object-cover"
+                    />
+                  )}
+                  <div className="p-3">
+                    <p className="font-semibold text-zinc-900 text-sm truncate">
+                      {settings.og_title || settings.site_name || "Your Site Title"}
+                    </p>
+                    <p className="text-xs text-zinc-500 mt-1 line-clamp-2">
+                      {settings.og_description || settings.meta_description || "Your site description..."}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Footer / Copyright */}
+        <div className="bg-white rounded-xl border border-zinc-200 p-6">
+          <h2 className="text-xl font-semibold text-zinc-900 mb-2">Footer</h2>
+          <p className="text-sm text-zinc-500 mb-6">
+            Customize the copyright text shown at the bottom of your site
+          </p>
+          
+          <div>
+            <label className="block text-sm font-medium text-zinc-700 mb-2">
+              Copyright Text
+            </label>
+            <input
+              type="text"
+              value={settings.copyright_text || ""}
+              onChange={(e) => updateField("copyright_text", e.target.value)}
+              className="w-full px-4 py-3 border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent"
+              placeholder="© 2026 Your Name. All rights reserved."
+            />
+            <p className="text-xs text-zinc-400 mt-1">
+              This text appears in the footer of your portfolio.
+            </p>
           </div>
         </div>
 
