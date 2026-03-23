@@ -4,20 +4,6 @@ const POSTHOG_HOST = process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://us.i.posth
 const POSTHOG_API_KEY = process.env.POSTHOG_PERSONAL_API_KEY
 const PROJECT_ID = process.env.POSTHOG_PROJECT_ID || '341992'
 
-interface PostHogEvent {
-  properties: {
-    $geoip_country_name?: string
-    $geoip_city_name?: string
-    $geoip_country_code?: string
-    $current_url?: string
-    $pathname?: string
-    $browser?: string
-    $device_type?: string
-    $referrer?: string
-  }
-  timestamp: string
-}
-
 export async function GET(request: NextRequest) {
   if (!POSTHOG_API_KEY) {
     console.error('[v0] PostHog API key not configured')
@@ -35,32 +21,49 @@ export async function GET(request: NextRequest) {
 
   const searchParams = request.nextUrl.searchParams
   const days = parseInt(searchParams.get('days') || '30')
-  
-  // Calculate date range
-  const endDate = new Date()
-  const startDate = new Date()
-  startDate.setDate(startDate.getDate() - days)
 
   try {
-    // PostHog API uses different base URL for API calls
+    // PostHog Query API uses the main host (not the ingestion host)
     const apiHost = POSTHOG_HOST.replace('us.i.posthog.com', 'us.posthog.com')
-    const apiUrl = `${apiHost}/api/projects/${PROJECT_ID}/events?event=$pageview&after=${startDate.toISOString()}&before=${endDate.toISOString()}&limit=1000`
+    const apiUrl = `${apiHost}/api/projects/${PROJECT_ID}/query/`
     
-    console.log('[v0] Fetching PostHog events from:', apiUrl)
+    // Use HogQL to query pageview events
+    const hogqlQuery = `
+      SELECT 
+        properties.$current_url as url,
+        properties.$pathname as pathname,
+        properties.$geoip_country_name as country,
+        properties.$geoip_city_name as city,
+        properties.$browser as browser,
+        properties.$device_type as device,
+        timestamp
+      FROM events 
+      WHERE event = '$pageview' 
+        AND timestamp >= now() - INTERVAL ${days} DAY
+      ORDER BY timestamp DESC
+      LIMIT 1000
+    `
     
-    // Fetch pageview events from PostHog
+    console.log('[v0] Fetching PostHog events using Query API')
+    
     const eventsResponse = await fetch(apiUrl, {
+      method: 'POST',
       headers: {
         'Authorization': `Bearer ${POSTHOG_API_KEY}`,
         'Content-Type': 'application/json',
       },
-      cache: 'no-store' // Don't cache for real-time updates
+      body: JSON.stringify({
+        query: {
+          kind: 'HogQLQuery',
+          query: hogqlQuery
+        }
+      }),
+      cache: 'no-store'
     })
 
     if (!eventsResponse.ok) {
       const errorText = await eventsResponse.text()
       console.error('[v0] PostHog API error:', eventsResponse.status, errorText)
-      // Return empty data instead of error for graceful degradation
       return NextResponse.json({
         totalViews: 0,
         uniqueCountries: 0,
@@ -73,23 +76,30 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    const eventsData = await eventsResponse.json()
-    const events: PostHogEvent[] = eventsData.results || []
+    const data = await eventsResponse.json()
+    const results = data.results || []
+    const columns = data.columns || ['url', 'pathname', 'country', 'city', 'browser', 'device', 'timestamp']
     
-    console.log('[v0] PostHog returned events count:', events.length)
-    if (events.length > 0) {
-      console.log('[v0] Sample event URL:', events[0].properties?.$current_url)
-    }
-
-    // Filter events for this domain only (or show all if no domain match)
-    let domainEvents = events.filter(event => {
-      const url = event.properties?.$current_url || ''
+    console.log('[v0] PostHog returned events count:', results.length)
+    
+    // Convert results array to objects
+    const events = results.map((row: any[]) => {
+      const obj: Record<string, any> = {}
+      columns.forEach((col: string, i: number) => {
+        obj[col] = row[i]
+      })
+      return obj
+    })
+    
+    // Filter for this domain
+    let domainEvents = events.filter((event: any) => {
+      const url = event.url || ''
       return url.includes('fullstack.wesshinn.com') || url.includes('wesshinn.com') || url.includes('localhost')
     })
     
-    // If no domain-filtered events, show all events for debugging
+    // If no domain-filtered events, show all
     if (domainEvents.length === 0 && events.length > 0) {
-      console.log('[v0] No domain-filtered events found, showing all events')
+      console.log('[v0] No domain-filtered events, showing all')
       domainEvents = events
     }
 
@@ -102,22 +112,20 @@ export async function GET(request: NextRequest) {
     const deviceMap = new Map<string, number>()
 
     for (const event of domainEvents) {
-      const props = event.properties || {}
-      
       // Country
-      const country = props.$geoip_country_name || 'Unknown'
+      const country = event.country || 'Unknown'
       countryMap.set(country, (countryMap.get(country) || 0) + 1)
       
       // City
-      const city = props.$geoip_city_name
-      if (city && city !== 'Unknown') {
+      const city = event.city
+      if (city && city !== 'Unknown' && city !== null) {
         const cityKey = `${city}|${country}`
         const existing = cityMap.get(cityKey) || { count: 0, country }
         cityMap.set(cityKey, { count: existing.count + 1, country })
       }
       
       // Pages
-      const path = props.$pathname || '/'
+      const path = event.pathname || '/'
       pageMap.set(path, (pageMap.get(path) || 0) + 1)
       
       // Daily views
@@ -125,11 +133,11 @@ export async function GET(request: NextRequest) {
       dailyMap.set(date, (dailyMap.get(date) || 0) + 1)
       
       // Browser
-      const browser = props.$browser || 'Unknown'
+      const browser = event.browser || 'Unknown'
       browserMap.set(browser, (browserMap.get(browser) || 0) + 1)
       
       // Device
-      const device = props.$device_type || 'Desktop'
+      const device = event.device || 'Desktop'
       deviceMap.set(device, (deviceMap.get(device) || 0) + 1)
     }
 
@@ -159,12 +167,12 @@ export async function GET(request: NextRequest) {
     // Get recent visitors (last 10 events)
     const recentVisitors = domainEvents
       .slice(0, 10)
-      .map(event => ({
-        country: event.properties?.$geoip_country_name || 'Unknown',
-        city: event.properties?.$geoip_city_name || 'Unknown',
-        page: event.properties?.$pathname || '/',
+      .map((event: any) => ({
+        country: event.country || 'Unknown',
+        city: event.city || 'Unknown',
+        page: event.pathname || '/',
         time: event.timestamp,
-        browser: event.properties?.$browser || 'Unknown'
+        browser: event.browser || 'Unknown'
       }))
 
     return NextResponse.json({
