@@ -9,25 +9,37 @@ const supabase = createClient(
 // This endpoint receives analytics events from Vercel Web Analytics Drain
 export async function POST(request: NextRequest) {
   try {
-    const events = await request.json()
+    const rawEvents = await request.json()
     
-    // Store raw payload for debugging
-    await supabase.from('analytics_raw').insert({ payload: events })
+    // Store raw payload for debugging (can be removed later)
+    await supabase.from('analytics_raw').insert({ payload: rawEvents })
     
-    // Handle both single events and arrays
-    const eventArray = Array.isArray(events) ? events : [events]
+    // Vercel sends: [{payload: [{event1}, {event2}]}, {payload: [{event3}]}]
+    // Flatten all events from all payload arrays
+    const allEvents: any[] = []
+    const eventWrappers = Array.isArray(rawEvents) ? rawEvents : [rawEvents]
     
-    const pageViews = eventArray
+    for (const wrapper of eventWrappers) {
+      if (wrapper.payload && Array.isArray(wrapper.payload)) {
+        allEvents.push(...wrapper.payload)
+      } else if (wrapper.eventType || wrapper.type) {
+        // Direct event format
+        allEvents.push(wrapper)
+      }
+    }
+    
+    const pageViews = allEvents
       .filter((event: any) => event.eventType === 'pageview' || event.type === 'pageview')
       .map((event: any) => ({
         path: event.path || event.page || event.url || '/',
-        // Try multiple possible field paths for geo data
-        country: event.geo?.country || event.country || event.location?.country || null,
-        city: event.geo?.city || event.city || event.location?.city || null,
-        region: event.geo?.region || event.region || event.location?.region || null,
-        // Try multiple possible field paths for device/browser
-        device: event.ua?.device || event.device?.type || event.deviceType || null,
-        browser: event.ua?.browser || event.browser || event.userAgent?.browser || null,
+        // Vercel sends country directly on event (not nested)
+        country: event.country || event.geo?.country || null,
+        // Note: Vercel Web Analytics does NOT provide city data
+        city: event.city || event.geo?.city || null,
+        region: event.region || event.geo?.region || null,
+        // Device info from Vercel
+        device: event.deviceType || event.device?.type || null,
+        browser: event.clientName || event.browser || null,
         referrer: event.referrer || event.ref || null,
         timestamp: event.timestamp ? new Date(event.timestamp).toISOString() : new Date().toISOString(),
       }))

@@ -25,7 +25,8 @@ import {
   Calendar,
   AlertCircle,
   ExternalLink,
-  Map
+  Map,
+  RefreshCw
 } from 'lucide-react'
 import dynamic from 'next/dynamic'
 
@@ -52,26 +53,42 @@ const COLORS = ['#ff6b4a', '#4ade80', '#60a5fa', '#f472b6', '#a78bfa', '#fbbf24'
 export default function AnalyticsPage() {
   const [data, setData] = useState<AnalyticsData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [days, setDays] = useState(30)
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
+  const [autoRefresh, setAutoRefresh] = useState(true)
 
   useEffect(() => {
     fetchAnalytics()
   }, [days])
 
-  const fetchAnalytics = async () => {
-    setLoading(true)
+  // Auto-refresh every 30 seconds for real-time updates
+  useEffect(() => {
+    if (!autoRefresh) return
+    const interval = setInterval(() => {
+      fetchAnalytics(false)
+    }, 30000)
+    return () => clearInterval(interval)
+  }, [autoRefresh, days])
+
+  const fetchAnalytics = async (showLoader = true) => {
+    if (showLoader) setLoading(true)
+    else setRefreshing(true)
     setError(null)
     try {
-      const response = await fetch(`/api/analytics?days=${days}`)
+      // Use PostHog API for real-time analytics with city data
+      const response = await fetch(`/api/analytics/posthog?days=${days}`)
       if (!response.ok) throw new Error('Failed to fetch analytics')
       const result = await response.json()
       setData(result)
+      setLastUpdated(new Date())
     } catch (err) {
       setError('Failed to load analytics data')
       console.error(err)
     } finally {
       setLoading(false)
+      setRefreshing(false)
     }
   }
 
@@ -93,7 +110,29 @@ export default function AnalyticsPage() {
           <h1 className="text-3xl font-bold text-zinc-900">Analytics</h1>
           <p className="text-zinc-500 mt-1">Track visitors to your portfolio</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
+          {lastUpdated && (
+            <span className="text-xs text-zinc-400">
+              Updated {lastUpdated.toLocaleTimeString()}
+            </span>
+          )}
+          <button
+            onClick={() => fetchAnalytics(false)}
+            disabled={refreshing}
+            className="p-2 rounded-lg border border-zinc-200 hover:bg-zinc-50 transition-colors disabled:opacity-50"
+            title="Refresh data"
+          >
+            <RefreshCw className={`w-4 h-4 text-zinc-600 ${refreshing ? 'animate-spin' : ''}`} />
+          </button>
+          <label className="flex items-center gap-2 text-sm text-zinc-600">
+            <input
+              type="checkbox"
+              checked={autoRefresh}
+              onChange={(e) => setAutoRefresh(e.target.checked)}
+              className="rounded border-zinc-300"
+            />
+            Auto-refresh
+          </label>
           <Calendar className="w-5 h-5 text-zinc-400" />
           <select
             value={days}
@@ -121,25 +160,20 @@ export default function AnalyticsPage() {
           </div>
           <h2 className="text-xl font-semibold text-zinc-900 mb-2">No Analytics Data Yet</h2>
           <p className="text-zinc-500 max-w-md mx-auto mb-6">
-            Analytics data will appear here once visitors start viewing your site and the Vercel Web Analytics Drain is configured.
+            Analytics data will appear here once visitors start viewing your site. PostHog tracks page views in real-time with city-level geo data.
           </p>
           <div className="bg-zinc-50 rounded-lg p-4 max-w-lg mx-auto text-left">
-            <h3 className="font-medium text-zinc-900 mb-2">Setup Instructions:</h3>
-            <ol className="text-sm text-zinc-600 space-y-2 list-decimal list-inside">
-              <li>Go to your Vercel project dashboard</li>
-              <li>Navigate to Analytics &gt; Web Analytics &gt; Drains</li>
-              <li>Add a new drain with this URL:</li>
-            </ol>
-            <code className="block mt-2 p-2 bg-zinc-100 rounded text-xs break-all">
-              {typeof window !== 'undefined' ? `${window.location.origin}/api/analytics-drain` : '/api/analytics-drain'}
-            </code>
+            <h3 className="font-medium text-zinc-900 mb-2">Powered by PostHog</h3>
+            <p className="text-sm text-zinc-600 mb-3">
+              Your site is configured with PostHog analytics. Visit your site to start tracking page views.
+            </p>
             <a 
-              href="https://vercel.com/docs/analytics/web-analytics-drains" 
+              href="https://us.posthog.com" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 mt-3 text-sm text-blue-600 hover:underline"
+              className="inline-flex items-center gap-1 text-sm text-blue-600 hover:underline"
             >
-              Learn more about Web Analytics Drains
+              Open PostHog Dashboard
               <ExternalLink className="w-3 h-3" />
             </a>
           </div>
@@ -365,7 +399,7 @@ export default function AnalyticsPage() {
                 <div className="text-center py-8 text-zinc-400">
                   <MapPin className="w-8 h-8 mx-auto mb-2 opacity-50" />
                   <p className="text-sm">City data not yet available</p>
-                  <p className="text-xs mt-1">Vercel Analytics may take time to provide geo data</p>
+                  <p className="text-xs mt-1">PostHog will show city-level data once visitors arrive</p>
                 </div>
               )}
             </div>

@@ -76,7 +76,7 @@ export default async function HomePage() {
         {/* Fixed Left Sidebar - Desktop Only */}
         <div className="flex">
           <aside className="hidden lg:block w-[13%] min-w-[160px] max-w-[200px] min-h-screen fixed left-0 top-0 border-r border-gray-200 bg-inherit p-4">
-            <div className="h-full flex flex-col justify-between">
+            <div className="h-full flex flex-col">
               <div>
                 {/* Logo */}
                 <span 
@@ -86,11 +86,12 @@ export default async function HomePage() {
                   {siteSettings?.site_name || 'Worq'}
                 </span>
               </div>
-              <ActiveNav 
-                sections={sections.map(s => ({ id: s.id, section_type: s.section_type, title: s.title || s.section_type }))}
-                primaryColor={siteSettings?.primary_color || '#ff6b4a'}
-              />
-              <div className="text-xs text-gray-500" />
+              <div className="mt-[10vh]">
+                <ActiveNav 
+                  sections={sections.map(s => ({ id: s.id, section_type: s.section_type, title: s.title || s.section_type }))}
+                  primaryColor={siteSettings?.primary_color || '#ff6b4a'}
+                />
+              </div>
             </div>
           </aside>
 

@@ -1,7 +1,9 @@
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { CursorWrapper } from '@/components/layout/cursor-wrapper'
+import { PostHogProvider, PostHogPageView } from '@/components/providers/posthog-provider'
 import { createClient } from '@/lib/supabase/server'
 import './globals.css'
 
@@ -53,8 +55,13 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body className="font-sans antialiased">
-        <CursorWrapper />
-        {children}
+        <PostHogProvider>
+          <CursorWrapper />
+          <Suspense fallback={null}>
+            <PostHogPageView />
+          </Suspense>
+          {children}
+        </PostHogProvider>
         <Analytics />
       </body>
     </html>
