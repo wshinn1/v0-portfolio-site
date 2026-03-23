@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 const POSTHOG_HOST = process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://us.i.posthog.com'
 const POSTHOG_API_KEY = process.env.POSTHOG_PERSONAL_API_KEY
-const PROJECT_ID = '341992'
+const PROJECT_ID = process.env.POSTHOG_PROJECT_ID || '341992'
 
 interface PostHogEvent {
   properties: {
@@ -20,7 +20,17 @@ interface PostHogEvent {
 
 export async function GET(request: NextRequest) {
   if (!POSTHOG_API_KEY) {
-    return NextResponse.json({ error: 'PostHog API key not configured' }, { status: 500 })
+    console.error('[v0] PostHog API key not configured')
+    return NextResponse.json({ 
+      error: 'PostHog API key not configured',
+      totalViews: 0,
+      uniqueCountries: 0,
+      uniqueCities: 0,
+      countries: [],
+      cities: [],
+      pages: [],
+      daily: []
+    })
   }
 
   const searchParams = request.nextUrl.searchParams
@@ -32,22 +42,35 @@ export async function GET(request: NextRequest) {
   startDate.setDate(startDate.getDate() - days)
 
   try {
+    // PostHog API uses different base URL for API calls
+    const apiHost = POSTHOG_HOST.replace('us.i.posthog.com', 'us.posthog.com')
+    const apiUrl = `${apiHost}/api/projects/${PROJECT_ID}/events?event=$pageview&after=${startDate.toISOString()}&before=${endDate.toISOString()}&limit=1000`
+    
+    console.log('[v0] Fetching PostHog events from:', apiUrl)
+    
     // Fetch pageview events from PostHog
-    const eventsResponse = await fetch(
-      `${POSTHOG_HOST}/api/projects/${PROJECT_ID}/events?event=$pageview&after=${startDate.toISOString()}&before=${endDate.toISOString()}&limit=1000`,
-      {
-        headers: {
-          'Authorization': `Bearer ${POSTHOG_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        next: { revalidate: 60 } // Cache for 60 seconds
-      }
-    )
+    const eventsResponse = await fetch(apiUrl, {
+      headers: {
+        'Authorization': `Bearer ${POSTHOG_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      cache: 'no-store' // Don't cache for real-time updates
+    })
 
     if (!eventsResponse.ok) {
       const errorText = await eventsResponse.text()
-      console.error('PostHog API error:', errorText)
-      return NextResponse.json({ error: 'Failed to fetch from PostHog' }, { status: 500 })
+      console.error('[v0] PostHog API error:', eventsResponse.status, errorText)
+      // Return empty data instead of error for graceful degradation
+      return NextResponse.json({
+        totalViews: 0,
+        uniqueCountries: 0,
+        uniqueCities: 0,
+        countries: [],
+        cities: [],
+        pages: [],
+        daily: [],
+        error: `PostHog API error: ${eventsResponse.status}`
+      })
     }
 
     const eventsData = await eventsResponse.json()
@@ -133,7 +156,17 @@ export async function GET(request: NextRequest) {
       lastUpdated: new Date().toISOString()
     })
   } catch (error) {
-    console.error('PostHog API error:', error)
-    return NextResponse.json({ error: 'Failed to fetch analytics' }, { status: 500 })
+    console.error('[v0] PostHog API error:', error)
+    // Return empty data instead of error for graceful degradation
+    return NextResponse.json({
+      totalViews: 0,
+      uniqueCountries: 0,
+      uniqueCities: 0,
+      countries: [],
+      cities: [],
+      pages: [],
+      daily: [],
+      error: 'Failed to fetch analytics'
+    })
   }
 }
