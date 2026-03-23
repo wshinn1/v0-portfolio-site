@@ -294,12 +294,12 @@ export default function AnalyticsPage() {
           {/* Countries and Cities Lists */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Countries List */}
-            {data?.countries && data.countries.length > 0 && (
-              <div className="bg-white rounded-xl border border-zinc-200 p-6">
-                <h2 className="text-lg font-semibold text-zinc-900 mb-4 flex items-center gap-2">
-                  <Globe className="w-5 h-5 text-zinc-400" />
-                  All Countries
-                </h2>
+            <div className="bg-white rounded-xl border border-zinc-200 p-6">
+              <h2 className="text-lg font-semibold text-zinc-900 mb-4 flex items-center gap-2">
+                <Globe className="w-5 h-5 text-zinc-400" />
+                All Countries
+              </h2>
+              {data?.countries && data.countries.length > 0 ? (
                 <div className="space-y-2 max-h-[400px] overflow-y-auto">
                   {data.countries.map((country, index) => (
                     <div key={country.name} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-zinc-50 transition-colors">
@@ -321,16 +321,22 @@ export default function AnalyticsPage() {
                     </div>
                   ))}
                 </div>
-              </div>
-            )}
+              ) : (
+                <div className="text-center py-8 text-zinc-400">
+                  <Globe className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">Location data not yet available</p>
+                  <p className="text-xs mt-1">Vercel Analytics may take time to provide geo data</p>
+                </div>
+              )}
+            </div>
 
             {/* Cities List */}
-            {data?.cities && data.cities.length > 0 && (
-              <div className="bg-white rounded-xl border border-zinc-200 p-6">
-                <h2 className="text-lg font-semibold text-zinc-900 mb-4 flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-zinc-400" />
-                  All Cities
-                </h2>
+            <div className="bg-white rounded-xl border border-zinc-200 p-6">
+              <h2 className="text-lg font-semibold text-zinc-900 mb-4 flex items-center gap-2">
+                <MapPin className="w-5 h-5 text-zinc-400" />
+                All Cities
+              </h2>
+              {data?.cities && data.cities.length > 0 ? (
                 <div className="space-y-2 max-h-[400px] overflow-y-auto">
                   {data.cities.map((city, index) => (
                     <div key={`${city.name}-${city.country}`} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-zinc-50 transition-colors">
@@ -355,8 +361,14 @@ export default function AnalyticsPage() {
                     </div>
                   ))}
                 </div>
-              </div>
-            )}
+              ) : (
+                <div className="text-center py-8 text-zinc-400">
+                  <MapPin className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">City data not yet available</p>
+                  <p className="text-xs mt-1">Vercel Analytics may take time to provide geo data</p>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Top Pages */}

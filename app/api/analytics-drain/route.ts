@@ -7,24 +7,28 @@ const supabase = createClient(
 )
 
 // This endpoint receives analytics events from Vercel Web Analytics Drain
-// Vercel sends JSON arrays with schema "vercel.analytics.v2" and eventType "pageview"
 export async function POST(request: NextRequest) {
   try {
     const events = await request.json()
+    
+    // Store raw payload for debugging
+    await supabase.from('analytics_raw').insert({ payload: events })
     
     // Handle both single events and arrays
     const eventArray = Array.isArray(events) ? events : [events]
     
     const pageViews = eventArray
-      .filter((event: any) => event.eventType === 'pageview')
+      .filter((event: any) => event.eventType === 'pageview' || event.type === 'pageview')
       .map((event: any) => ({
-        path: event.path || '/',
-        country: event.geo?.country || null,
-        city: event.geo?.city || null,
-        region: event.geo?.region || null,
-        device: event.ua?.device || null,
-        browser: event.ua?.browser || null,
-        referrer: event.referrer || null,
+        path: event.path || event.page || event.url || '/',
+        // Try multiple possible field paths for geo data
+        country: event.geo?.country || event.country || event.location?.country || null,
+        city: event.geo?.city || event.city || event.location?.city || null,
+        region: event.geo?.region || event.region || event.location?.region || null,
+        // Try multiple possible field paths for device/browser
+        device: event.ua?.device || event.device?.type || event.deviceType || null,
+        browser: event.ua?.browser || event.browser || event.userAgent?.browser || null,
+        referrer: event.referrer || event.ref || null,
         timestamp: event.timestamp ? new Date(event.timestamp).toISOString() : new Date().toISOString(),
       }))
 
