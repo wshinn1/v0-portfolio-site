@@ -22,6 +22,7 @@ export function AboutEditor({ section, onSave }: AboutEditorProps) {
     resumeButtonText: sectionContent?.resumeButtonText || '',
     resumeUrl: sectionContent?.resumeUrl || '',
     contactButtonText: sectionContent?.contactButtonText || '',
+    linkedinUrl: sectionContent?.linkedinUrl || '',
   })
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -240,21 +241,21 @@ export function AboutEditor({ section, onSave }: AboutEditorProps) {
                 </div>
               </div>
 
-              {/* Contact Button */}
+              {/* LinkedIn Button */}
               <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
-                <h5 className="font-medium text-gray-800">Contact Button</h5>
+                <h5 className="font-medium text-gray-800">LinkedIn Button</h5>
                 <div>
-                  <label className="block text-sm text-gray-600 mb-1">Button Text</label>
+                  <label className="block text-sm text-gray-600 mb-1">LinkedIn URL</label>
                   <input
-                    type="text"
-                    value={content.contactButtonText}
-                    onChange={(e) => updateField('contactButtonText', e.target.value)}
+                    type="url"
+                    value={content.linkedinUrl}
+                    onChange={(e) => updateField('linkedinUrl', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Contact Me"
+                    placeholder="https://linkedin.com/in/yourprofile"
                   />
                 </div>
                 <p className="text-xs text-gray-500">
-                  This button scrolls to the Contact section
+                  This button opens your LinkedIn profile in a new tab
                 </p>
               </div>
             </div>

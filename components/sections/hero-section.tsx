@@ -159,18 +159,21 @@ export function HeroSection({ content, siteSettings }: HeroSectionProps) {
             {content.tagline}
           </Body>
 
-          {/* LinkedIn Button */}
-          {content.linkedinUrl && (
-            <a
-              href={content.linkedinUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0A66C2] text-white rounded-full font-medium hover:bg-[#004182] transition-colors"
-            >
-              <LinkedInIcon />
-              View LinkedIn Profile
-            </a>
-          )}
+          {/* Learn More Button - navigates to About section */}
+          <button
+            onClick={() => {
+              const aboutSection = document.getElementById('about')
+              if (aboutSection) {
+                aboutSection.scrollIntoView({ behavior: 'smooth' })
+              }
+            }}
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#1a1a1a] text-white rounded-full font-medium hover:bg-[#333] transition-colors"
+          >
+            Learn More
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 5v14M19 12l-7 7-7-7" />
+            </svg>
+          </button>
 
           {/* View At - Social Links */}
           {content.socialLinks && content.socialLinks.length > 0 && (
@@ -218,21 +221,23 @@ export function HeroSection({ content, siteSettings }: HeroSectionProps) {
 
         {/* Right Column - Stats & Awards */}
         <div className="lg:col-span-4 space-y-8">
-          {/* CTA Button */}
-          <div className="flex justify-end">
-            <button
-              onClick={() => {
-                const contactSection = document.getElementById('contact')
-                if (contactSection) {
-                  contactSection.scrollIntoView({ behavior: 'smooth' })
-                }
-              }}
-              className="px-6 py-3 rounded-full text-white font-medium transition-transform hover:scale-105"
-              style={{ backgroundColor: primaryColor }}
-            >
-              {content.ctaText}
-            </button>
-          </div>
+          {/* CTA Button - can be hidden via admin */}
+          {!content.hideContactButton && (
+            <div className="flex justify-end">
+              <button
+                onClick={() => {
+                  const contactSection = document.getElementById('contact')
+                  if (contactSection) {
+                    contactSection.scrollIntoView({ behavior: 'smooth' })
+                  }
+                }}
+                className="px-6 py-3 rounded-full text-white font-medium transition-transform hover:scale-105"
+                style={{ backgroundColor: primaryColor }}
+              >
+                {content.ctaText}
+              </button>
+            </div>
+          )}
 
           {/* Stats */}
           <div className="border-t border-b border-gray-200 py-6">

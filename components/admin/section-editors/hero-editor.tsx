@@ -23,6 +23,7 @@ export function HeroEditor({ section, onSave }: HeroEditorProps) {
     email: sectionContent?.email || '',
     profileImage: sectionContent?.profileImage || '',
     linkedinUrl: sectionContent?.linkedinUrl || '',
+    hideContactButton: sectionContent?.hideContactButton || false,
     stats: sectionContent?.stats || { years: '', yearsLabel: '' },
     awards: sectionContent?.awards || [],
     topRatedOn: sectionContent?.topRatedOn || [],
@@ -245,6 +246,19 @@ export function HeroEditor({ section, onSave }: HeroEditorProps) {
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="Contact Me"
             />
+          </div>
+
+          <div className="flex items-center gap-3">
+            <input
+              type="checkbox"
+              id="hideContactButton"
+              checked={content.hideContactButton || false}
+              onChange={(e) => updateField('hideContactButton', e.target.checked)}
+              className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            />
+            <label htmlFor="hideContactButton" className="text-sm font-medium text-gray-700">
+              Hide Contact Me button in hero section
+            </label>
           </div>
 
           {/* Profile Image Upload */}

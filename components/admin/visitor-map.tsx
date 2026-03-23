@@ -9,10 +9,9 @@ import {
   ZoomableGroup
 } from 'react-simple-maps'
 
-// World map TopoJSON
 const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json"
 
-// Country name to ISO code mapping for common countries
+// Country name to coordinates mapping
 const countryToCoords: Record<string, [number, number]> = {
   'United States': [-98.5795, 39.8283],
   'US': [-98.5795, 39.8283],
@@ -122,14 +121,15 @@ export function VisitorMap({ countries }: VisitorMapProps) {
   }, [countries])
 
   const maxViews = Math.max(...countries.map(c => c.views), 1)
+  const hasData = countries.length > 0
 
   return (
-    <div className="w-full h-[400px] bg-zinc-50 rounded-xl overflow-hidden">
+    <div className="w-full h-[350px] bg-gradient-to-b from-slate-50 to-slate-100 rounded-xl overflow-hidden relative">
       <ComposableMap
         projection="geoMercator"
         projectionConfig={{
-          scale: 120,
-          center: [0, 30]
+          scale: 130,
+          center: [0, 25]
         }}
         style={{ width: '100%', height: '100%' }}
       >
@@ -140,12 +140,12 @@ export function VisitorMap({ countries }: VisitorMapProps) {
                 <Geography
                   key={geo.rsmKey}
                   geography={geo}
-                  fill="#e4e4e7"
-                  stroke="#d4d4d8"
-                  strokeWidth={0.5}
+                  fill="#cbd5e1"
+                  stroke="#94a3b8"
+                  strokeWidth={0.3}
                   style={{
                     default: { outline: 'none' },
-                    hover: { fill: '#d4d4d8', outline: 'none' },
+                    hover: { fill: '#94a3b8', outline: 'none' },
                     pressed: { outline: 'none' }
                   }}
                 />
@@ -153,15 +153,29 @@ export function VisitorMap({ countries }: VisitorMapProps) {
             }
           </Geographies>
           {markers.map(({ name, coordinates, views }) => {
-            const size = Math.max(6, Math.min(20, (views / maxViews) * 20 + 6))
+            const size = Math.max(8, Math.min(24, (views / maxViews) * 24 + 8))
             return (
               <Marker key={name} coordinates={coordinates}>
+                {/* Pulse ring */}
+                <circle
+                  r={size + 4}
+                  fill="#3b82f6"
+                  fillOpacity={0.2}
+                  className="animate-ping"
+                  style={{ animationDuration: '2s' }}
+                />
+                {/* Main marker */}
                 <circle
                   r={size}
-                  fill="#ff6b4a"
-                  fillOpacity={0.7}
+                  fill="#3b82f6"
+                  fillOpacity={0.8}
                   stroke="#fff"
-                  strokeWidth={1.5}
+                  strokeWidth={2}
+                />
+                {/* Center dot */}
+                <circle
+                  r={3}
+                  fill="#fff"
                 />
                 <title>{`${name}: ${views} views`}</title>
               </Marker>
@@ -169,6 +183,31 @@ export function VisitorMap({ countries }: VisitorMapProps) {
           })}
         </ZoomableGroup>
       </ComposableMap>
+      
+      {/* Empty state overlay */}
+      {!hasData && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-50/80 backdrop-blur-sm">
+          <div className="text-center">
+            <div className="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center mx-auto mb-3">
+              <svg className="w-6 h-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <p className="text-sm font-medium text-slate-600">Waiting for visitors</p>
+            <p className="text-xs text-slate-400 mt-1">Locations will appear on the map in real-time</p>
+          </div>
+        </div>
+      )}
+      
+      {/* Legend */}
+      {hasData && (
+        <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 text-xs text-slate-600 shadow-sm">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-blue-500" />
+            <span>Visitor locations</span>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
