@@ -99,6 +99,7 @@ export interface AboutContent {
   resumeButtonText: string
   contactButtonText: string
   linkedinUrl: string
+  githubUrl: string
 }
 
 // Work Section
