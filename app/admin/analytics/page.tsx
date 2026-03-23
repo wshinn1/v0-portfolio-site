@@ -24,8 +24,20 @@ import {
   Loader2,
   Calendar,
   AlertCircle,
-  ExternalLink
+  ExternalLink,
+  Map
 } from 'lucide-react'
+import dynamic from 'next/dynamic'
+
+// Dynamically import the map component to avoid SSR issues
+const VisitorMap = dynamic(() => import('@/components/admin/visitor-map').then(mod => mod.VisitorMap), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-[400px] bg-zinc-100 rounded-xl animate-pulse flex items-center justify-center">
+      <Loader2 className="w-8 h-8 animate-spin text-zinc-400" />
+    </div>
+  )
+})
 
 interface AnalyticsData {
   totalViews: number
@@ -174,6 +186,20 @@ export default function AnalyticsPage() {
             </div>
           </div>
 
+          {/* Visitor Map */}
+          {data?.countries && data.countries.length > 0 && (
+            <div className="bg-white rounded-xl border border-zinc-200 p-6">
+              <h2 className="text-lg font-semibold text-zinc-900 mb-4 flex items-center gap-2">
+                <Map className="w-5 h-5 text-zinc-400" />
+                Visitor Locations
+              </h2>
+              <VisitorMap countries={data.countries} />
+              <p className="text-xs text-zinc-400 mt-3 text-center">
+                Bubble size represents relative visitor count. Hover over bubbles to see details.
+              </p>
+            </div>
+          )}
+
           {/* Views Over Time */}
           {data?.daily && data.daily.length > 0 && (
             <div className="bg-white rounded-xl border border-zinc-200 p-6">
@@ -205,7 +231,7 @@ export default function AnalyticsPage() {
             </div>
           )}
 
-          {/* Countries and Cities */}
+          {/* Countries and Cities Charts */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Countries Chart */}
             {data?.countries && data.countries.length > 0 && (
@@ -260,6 +286,74 @@ export default function AnalyticsPage() {
                       <Bar dataKey="views" fill="#4ade80" radius={[0, 4, 4, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Countries and Cities Lists */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Countries List */}
+            {data?.countries && data.countries.length > 0 && (
+              <div className="bg-white rounded-xl border border-zinc-200 p-6">
+                <h2 className="text-lg font-semibold text-zinc-900 mb-4 flex items-center gap-2">
+                  <Globe className="w-5 h-5 text-zinc-400" />
+                  All Countries
+                </h2>
+                <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                  {data.countries.map((country, index) => (
+                    <div key={country.name} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-zinc-50 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <span className="w-6 h-6 rounded-full bg-orange-100 flex items-center justify-center text-xs font-medium text-orange-600">
+                          {index + 1}
+                        </span>
+                        <span className="text-zinc-900 font-medium">{country.name}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-24 h-2 bg-zinc-100 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-orange-500 rounded-full"
+                            style={{ width: `${(country.views / data.countries[0].views) * 100}%` }}
+                          />
+                        </div>
+                        <span className="text-zinc-500 text-sm font-medium w-12 text-right">{country.views}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Cities List */}
+            {data?.cities && data.cities.length > 0 && (
+              <div className="bg-white rounded-xl border border-zinc-200 p-6">
+                <h2 className="text-lg font-semibold text-zinc-900 mb-4 flex items-center gap-2">
+                  <MapPin className="w-5 h-5 text-zinc-400" />
+                  All Cities
+                </h2>
+                <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                  {data.cities.map((city, index) => (
+                    <div key={`${city.name}-${city.country}`} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-zinc-50 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <span className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center text-xs font-medium text-green-600">
+                          {index + 1}
+                        </span>
+                        <div>
+                          <span className="text-zinc-900 font-medium">{city.name}</span>
+                          <span className="text-zinc-400 text-sm ml-2">{city.country}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-24 h-2 bg-zinc-100 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-green-500 rounded-full"
+                            style={{ width: `${(city.views / data.cities[0].views) * 100}%` }}
+                          />
+                        </div>
+                        <span className="text-zinc-500 text-sm font-medium w-12 text-right">{city.views}</span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
