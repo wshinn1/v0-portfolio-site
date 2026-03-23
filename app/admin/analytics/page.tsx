@@ -358,16 +358,16 @@ export default function AnalyticsPage() {
 
       {/* Bottom Row - Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Top Cities */}
+        {/* Cities */}
         <div className="bg-white rounded-xl border border-slate-100 p-5 shadow-sm">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-semibold text-slate-800">Top Cities</h2>
+            <h2 className="text-sm font-semibold text-slate-800">Cities</h2>
             <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">{days} days</span>
           </div>
           
-          <div className="space-y-2 max-h-[200px] overflow-y-auto">
+          <div className="space-y-2 max-h-[250px] overflow-y-auto">
             {data?.cities && data.cities.length > 0 ? (
-              data.cities.slice(0, 6).map((city, index) => (
+              data.cities.map((city, index) => (
                 <div key={`${city.name}-${index}`} className="flex items-center justify-between py-2 px-2 bg-slate-50 rounded-lg">
                   <div className="flex items-center gap-2">
                     <div className="w-6 h-6 bg-emerald-100 rounded flex items-center justify-center">
