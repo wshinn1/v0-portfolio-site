@@ -103,8 +103,6 @@ export default function AnalyticsPage() {
     )
   }
 
-  const hasData = data && data.totalViews > 0
-
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -156,33 +154,8 @@ export default function AnalyticsPage() {
         </div>
       )}
 
-      {!hasData ? (
-        <div className="bg-white rounded-xl border border-zinc-200 p-12 text-center">
-          <div className="w-16 h-16 bg-zinc-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Eye className="w-8 h-8 text-zinc-400" />
-          </div>
-          <h2 className="text-xl font-semibold text-zinc-900 mb-2">No Analytics Data Yet</h2>
-          <p className="text-zinc-500 max-w-md mx-auto mb-6">
-            Analytics data will appear here once visitors start viewing your site. PostHog tracks page views in real-time with city-level geo data.
-          </p>
-          <div className="bg-zinc-50 rounded-lg p-4 max-w-lg mx-auto text-left">
-            <h3 className="font-medium text-zinc-900 mb-2">Powered by PostHog</h3>
-            <p className="text-sm text-zinc-600 mb-3">
-              Your site is configured with PostHog analytics. Visit your site to start tracking page views.
-            </p>
-            <a 
-              href="https://us.posthog.com" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-sm text-blue-600 hover:underline"
-            >
-              Open PostHog Dashboard
-              <ExternalLink className="w-3 h-3" />
-            </a>
-          </div>
-        </div>
-      ) : (
-        <>
+      {/* Always show the dashboard UI */}
+      <>
           {/* Stats Overview */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="bg-white rounded-xl border border-zinc-200 p-6">
@@ -462,7 +435,6 @@ export default function AnalyticsPage() {
             </div>
           )}
         </>
-      )}
     </div>
   )
 }
