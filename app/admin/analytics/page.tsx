@@ -42,10 +42,13 @@ const VisitorMap = dynamic(() => import('@/components/admin/visitor-map').then(m
 
 interface AnalyticsData {
   totalViews: number
+  uniqueCountries: number
+  uniqueCities: number
   countries: { name: string; views: number }[]
   cities: { name: string; views: number; country: string }[]
   pages: { path: string; views: number }[]
   daily: { date: string; views: number }[]
+  recentVisitors?: { country: string; city: string; page: string; time: string }[]
 }
 
 const COLORS = ['#ff6b4a', '#4ade80', '#60a5fa', '#f472b6', '#a78bfa', '#fbbf24', '#34d399', '#f87171', '#818cf8', '#fb923c']
@@ -63,12 +66,12 @@ export default function AnalyticsPage() {
     fetchAnalytics()
   }, [days])
 
-  // Auto-refresh every 30 seconds for real-time updates
+  // Auto-refresh every 15 seconds for real-time updates
   useEffect(() => {
     if (!autoRefresh) return
     const interval = setInterval(() => {
       fetchAnalytics(false)
-    }, 30000)
+    }, 15000)
     return () => clearInterval(interval)
   }, [autoRefresh, days])
 
@@ -219,6 +222,37 @@ export default function AnalyticsPage() {
               <p className="text-3xl font-bold text-zinc-900">{data?.pages.length || 0}</p>
             </div>
           </div>
+
+          {/* Real-time Visitors */}
+          {data?.recentVisitors && data.recentVisitors.length > 0 && (
+            <div className="bg-white rounded-xl border border-zinc-200 p-6">
+              <h2 className="text-lg font-semibold text-zinc-900 mb-4 flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                Recent Visitors (Live)
+              </h2>
+              <div className="space-y-3 max-h-[300px] overflow-y-auto">
+                {data.recentVisitors.map((visitor, index) => (
+                  <div key={index} className="flex items-center justify-between py-2 px-3 rounded-lg bg-zinc-50 hover:bg-zinc-100 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-pink-500 flex items-center justify-center">
+                        <Globe className="w-4 h-4 text-white" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-zinc-900 font-medium">{visitor.city}</span>
+                          <span className="text-zinc-400">{visitor.country}</span>
+                        </div>
+                        <span className="text-xs text-zinc-500 font-mono">{visitor.page}</span>
+                      </div>
+                    </div>
+                    <span className="text-xs text-zinc-400">
+                      {new Date(visitor.time).toLocaleTimeString()}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Visitor Map */}
           {data?.countries && data.countries.length > 0 && (

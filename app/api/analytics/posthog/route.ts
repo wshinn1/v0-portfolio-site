@@ -145,6 +145,17 @@ export async function GET(request: NextRequest) {
       .map(([date, views]) => ({ date, views }))
       .sort((a, b) => a.date.localeCompare(b.date))
 
+    // Get recent visitors (last 10 events)
+    const recentVisitors = domainEvents
+      .slice(0, 10)
+      .map(event => ({
+        country: event.properties?.$geoip_country_name || 'Unknown',
+        city: event.properties?.$geoip_city_name || 'Unknown',
+        page: event.properties?.$pathname || '/',
+        time: event.timestamp,
+        browser: event.properties?.$browser || 'Unknown'
+      }))
+
     return NextResponse.json({
       totalViews: domainEvents.length,
       uniqueCountries: countryMap.size,
@@ -153,6 +164,7 @@ export async function GET(request: NextRequest) {
       cities,
       pages,
       daily,
+      recentVisitors,
       lastUpdated: new Date().toISOString()
     })
   } catch (error) {
