@@ -26,12 +26,13 @@ export async function GET(request: NextRequest) {
     const apiHost = POSTHOG_HOST.replace('us.i.posthog.com', 'us.posthog.com')
     const apiUrl = `${apiHost}/api/projects/${PROJECT_ID}/query/`
     
-    // Use HogQL to query pageview events with city coordinates
+    // Use HogQL to query pageview events with city coordinates and state/region
     const hogqlQuery = `
       SELECT 
         properties.$current_url as url,
         properties.$pathname as pathname,
         properties.$geoip_country_name as country,
+        properties.$geoip_subdivision_1_name as state,
         properties.$geoip_city_name as city,
         properties.$geoip_latitude as latitude,
         properties.$geoip_longitude as longitude,
@@ -99,7 +100,8 @@ export async function GET(request: NextRequest) {
 
     // Aggregate data
     const countryMap = new Map<string, number>()
-    const cityMap = new Map<string, { count: number; country: string; lat: number | null; lng: number | null }>()
+    const stateMap = new Map<string, { count: number; country: string }>()
+    const cityMap = new Map<string, { count: number; country: string; state: string | null; lat: number | null; lng: number | null }>()
     const pageMap = new Map<string, number>()
     const dailyMap = new Map<string, number>()
     const browserMap = new Map<string, number>()
@@ -110,16 +112,25 @@ export async function GET(request: NextRequest) {
       const country = event.country || 'Unknown'
       countryMap.set(country, (countryMap.get(country) || 0) + 1)
       
-      // City with coordinates
+      // State/Region
+      const state = event.state
+      if (state && state !== 'Unknown' && state !== null) {
+        const stateKey = `${state}|${country}`
+        const existing = stateMap.get(stateKey) || { count: 0, country }
+        stateMap.set(stateKey, { count: existing.count + 1, country })
+      }
+      
+      // City with coordinates and state
       const city = event.city
       const lat = event.latitude ? parseFloat(event.latitude) : null
       const lng = event.longitude ? parseFloat(event.longitude) : null
       if (city && city !== 'Unknown' && city !== null) {
-        const cityKey = `${city}|${country}`
-        const existing = cityMap.get(cityKey) || { count: 0, country, lat, lng }
+        const cityKey = `${city}|${state || ''}|${country}`
+        const existing = cityMap.get(cityKey) || { count: 0, country, state: state || null, lat, lng }
         cityMap.set(cityKey, { 
           count: existing.count + 1, 
           country,
+          state: state || existing.state,
           lat: lat || existing.lat,
           lng: lng || existing.lng
         })
@@ -148,12 +159,21 @@ export async function GET(request: NextRequest) {
       .sort((a, b) => b.views - a.views)
       .slice(0, 10)
 
+    const states = Array.from(stateMap.entries())
+      .map(([key, data]) => {
+        const [name] = key.split('|')
+        return { name, country: data.country, views: data.count }
+      })
+      .sort((a, b) => b.views - a.views)
+      .slice(0, 10)
+
     const cities = Array.from(cityMap.entries())
       .map(([key, data]) => {
         const [name] = key.split('|')
         return { 
           name, 
-          country: data.country, 
+          country: data.country,
+          state: data.state,
           views: data.count,
           lat: data.lat,
           lng: data.lng
@@ -176,6 +196,7 @@ export async function GET(request: NextRequest) {
       .slice(0, 10)
       .map((event: any) => ({
         country: event.country || 'Unknown',
+        state: event.state || null,
         city: event.city || 'Unknown',
         page: event.pathname || '/',
         time: event.timestamp,
@@ -185,8 +206,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       totalViews: domainEvents.length,
       uniqueCountries: countryMap.size,
+      uniqueStates: stateMap.size,
       uniqueCities: cityMap.size,
       countries,
+      states,
       cities,
       pages,
       daily,

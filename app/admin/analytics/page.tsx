@@ -41,12 +41,14 @@ const VisitorMap = dynamic(() => import('@/components/admin/visitor-map').then(m
 interface AnalyticsData {
   totalViews: number
   uniqueCountries: number
+  uniqueStates: number
   uniqueCities: number
   countries: { name: string; views: number }[]
-  cities: { name: string; views: number; country: string; lat?: number | null; lng?: number | null }[]
+  states: { name: string; country: string; views: number }[]
+  cities: { name: string; views: number; country: string; state?: string | null; lat?: number | null; lng?: number | null }[]
   pages: { path: string; views: number }[]
   daily: { date: string; views: number }[]
-  recentVisitors?: { country: string; city: string; page: string; time: string; browser?: string }[]
+  recentVisitors?: { country: string; state?: string | null; city: string; page: string; time: string; browser?: string }[]
 }
 
 // Country flags mapping
@@ -243,6 +245,23 @@ export default function AnalyticsPage() {
           </div>
         </div>
 
+        {/* States */}
+        <div className="bg-white rounded-xl border border-slate-100 p-4 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-violet-50 rounded-lg">
+              <MapPin className="w-5 h-5 text-violet-500" />
+            </div>
+            <div>
+              <p className="text-xs text-slate-500">States</p>
+              <p className="text-xl font-bold text-violet-600">{data?.states?.length || 0}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-1 mt-2">
+            <TrendingUp className="w-3 h-3 text-green-500" />
+            <span className="text-xs text-green-600">Regions</span>
+          </div>
+        </div>
+
         {/* Cities */}
         <div className="bg-white rounded-xl border border-slate-100 p-4 shadow-sm">
           <div className="flex items-center gap-3">
@@ -280,28 +299,58 @@ export default function AnalyticsPage() {
             <VisitorMap countries={data?.countries || []} cities={data?.cities || []} />
           </div>
           
-          {/* Top Countries Table */}
-          <div className="bg-slate-50 rounded-xl p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-medium text-slate-700">Top Countries</h3>
-              <span className="text-xs text-slate-400">Users</span>
-            </div>
-            <div className="space-y-2">
-              {data?.countries && data.countries.length > 0 ? (
-                data.countries.slice(0, 5).map((country, index) => (
-                  <div key={country.name} className="flex items-center justify-between py-2 px-2 bg-white rounded-lg">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">{countryFlags[country.name] || '🌍'}</span>
-                      <span className="text-sm text-slate-700">{country.name}</span>
+          {/* Top Countries & States Tables */}
+          <div className="space-y-4">
+            {/* Top Countries Table */}
+            <div className="bg-slate-50 rounded-xl p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-medium text-slate-700">Top Countries</h3>
+                <span className="text-xs text-slate-400">Users</span>
+              </div>
+              <div className="space-y-2">
+                {data?.countries && data.countries.length > 0 ? (
+                  data.countries.slice(0, 5).map((country, index) => (
+                    <div key={country.name} className="flex items-center justify-between py-2 px-2 bg-white rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">{countryFlags[country.name] || '🌍'}</span>
+                        <span className="text-sm text-slate-700">{country.name}</span>
+                      </div>
+                      <span className="text-sm font-semibold text-slate-800">{country.views.toLocaleString()}</span>
                     </div>
-                    <span className="text-sm font-semibold text-slate-800">{country.views.toLocaleString()}</span>
+                  ))
+                ) : (
+                  <div className="text-center py-4 text-slate-400 text-sm">
+                    No country data yet
                   </div>
-                ))
-              ) : (
-                <div className="text-center py-4 text-slate-400 text-sm">
-                  No country data yet
-                </div>
-              )}
+                )}
+              </div>
+            </div>
+
+            {/* Top States Table */}
+            <div className="bg-slate-50 rounded-xl p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-medium text-slate-700">Top States</h3>
+                <span className="text-xs text-slate-400">Users</span>
+              </div>
+              <div className="space-y-2">
+                {data?.states && data.states.length > 0 ? (
+                  data.states.slice(0, 5).map((state, index) => (
+                    <div key={state.name} className="flex items-center justify-between py-2 px-2 bg-white rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 bg-violet-100 rounded flex items-center justify-center">
+                          <MapPin className="w-3 h-3 text-violet-500" />
+                        </div>
+                        <span className="text-sm text-slate-700">{state.name}</span>
+                      </div>
+                      <span className="text-sm font-semibold text-slate-800">{state.views.toLocaleString()}</span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-4 text-slate-400 text-sm">
+                    No state data yet
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

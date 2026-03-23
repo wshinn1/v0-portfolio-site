@@ -23,6 +23,7 @@ export function AboutEditor({ section, onSave }: AboutEditorProps) {
     resumeUrl: sectionContent?.resumeUrl || '',
     contactButtonText: sectionContent?.contactButtonText || '',
     linkedinUrl: sectionContent?.linkedinUrl || '',
+    githubUrl: sectionContent?.githubUrl || '',
   })
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -256,6 +257,24 @@ export function AboutEditor({ section, onSave }: AboutEditorProps) {
                 </div>
                 <p className="text-xs text-gray-500">
                   This button opens your LinkedIn profile in a new tab
+                </p>
+              </div>
+
+              {/* GitHub Button */}
+              <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+                <h5 className="font-medium text-gray-800">GitHub Button</h5>
+                <div>
+                  <label className="block text-sm text-gray-600 mb-1">GitHub URL</label>
+                  <input
+                    type="url"
+                    value={content.githubUrl}
+                    onChange={(e) => updateField('githubUrl', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="https://github.com/yourusername"
+                  />
+                </div>
+                <p className="text-xs text-gray-500">
+                  This button opens your GitHub profile in a new tab
                 </p>
               </div>
             </div>
