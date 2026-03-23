@@ -6,7 +6,6 @@ const PROJECT_ID = process.env.POSTHOG_PROJECT_ID || '341992'
 
 export async function GET(request: NextRequest) {
   if (!POSTHOG_API_KEY) {
-    console.error('[v0] PostHog API key not configured')
     return NextResponse.json({ 
       error: 'PostHog API key not configured',
       totalViews: 0,
@@ -44,11 +43,6 @@ export async function GET(request: NextRequest) {
       LIMIT 1000
     `
     
-    console.log('[v0] Fetching PostHog events using Query API')
-    console.log('[v0] API URL:', apiUrl)
-    console.log('[v0] API Key starts with:', POSTHOG_API_KEY?.substring(0, 10))
-    console.log('[v0] Project ID:', PROJECT_ID)
-    
     const eventsResponse = await fetch(apiUrl, {
       method: 'POST',
       headers: {
@@ -64,11 +58,7 @@ export async function GET(request: NextRequest) {
       cache: 'no-store'
     })
 
-    console.log('[v0] PostHog response status:', eventsResponse.status)
     if (!eventsResponse.ok) {
-      const errorText = await eventsResponse.text()
-      console.error('[v0] PostHog API error:', eventsResponse.status, errorText)
-      console.error('[v0] Full error:', errorText)
       return NextResponse.json({
         totalViews: 0,
         uniqueCountries: 0,
@@ -82,14 +72,8 @@ export async function GET(request: NextRequest) {
     }
 
     const data = await eventsResponse.json()
-    console.log('[v0] PostHog raw response:', JSON.stringify(data).substring(0, 500))
     const results = data.results || []
     const columns = data.columns || ['url', 'pathname', 'country', 'city', 'browser', 'device', 'timestamp']
-    
-    console.log('[v0] PostHog returned events count:', results.length)
-    if (results.length > 0) {
-      console.log('[v0] First result:', JSON.stringify(results[0]))
-    }
     
     // Convert results array to objects
     const events = results.map((row: any[]) => {
@@ -108,7 +92,6 @@ export async function GET(request: NextRequest) {
     
     // If no domain-filtered events, show all
     if (domainEvents.length === 0 && events.length > 0) {
-      console.log('[v0] No domain-filtered events, showing all')
       domainEvents = events
     }
 
@@ -196,8 +179,7 @@ export async function GET(request: NextRequest) {
       lastUpdated: new Date().toISOString()
     })
   } catch (error) {
-    console.error('[v0] PostHog API error:', error)
-    // Return empty data instead of error for graceful degradation
+    // Return empty data for graceful degradation
     return NextResponse.json({
       totalViews: 0,
       uniqueCountries: 0,
