@@ -159,6 +159,19 @@ export function HeroSection({ content, siteSettings }: HeroSectionProps) {
             {content.tagline}
           </Body>
 
+          {/* LinkedIn Button */}
+          {content.linkedinUrl && (
+            <a
+              href={content.linkedinUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0A66C2] text-white rounded-full font-medium hover:bg-[#004182] transition-colors"
+            >
+              <LinkedInIcon />
+              View LinkedIn Profile
+            </a>
+          )}
+
           {/* View At - Social Links */}
           {content.socialLinks && content.socialLinks.length > 0 && (
             <div className="space-y-3">

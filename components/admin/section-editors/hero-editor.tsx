@@ -22,6 +22,7 @@ export function HeroEditor({ section, onSave }: HeroEditorProps) {
     tagline: sectionContent?.tagline || '',
     email: sectionContent?.email || '',
     profileImage: sectionContent?.profileImage || '',
+    linkedinUrl: sectionContent?.linkedinUrl || '',
     stats: sectionContent?.stats || { years: '', yearsLabel: '' },
     awards: sectionContent?.awards || [],
     topRatedOn: sectionContent?.topRatedOn || [],
@@ -221,6 +222,18 @@ export function HeroEditor({ section, onSave }: HeroEditorProps) {
               rows={3}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">LinkedIn URL</label>
+            <input
+              type="url"
+              value={content.linkedinUrl || ''}
+              onChange={(e) => updateField('linkedinUrl', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="https://linkedin.com/in/yourprofile"
+            />
+            <p className="text-xs text-gray-500 mt-1">This will display as a button below your bio</p>
           </div>
 
           <div>

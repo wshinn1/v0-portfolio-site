@@ -70,6 +70,7 @@ export interface HeroContent {
   tagline: string
   email: string
   profileImage: string
+  linkedinUrl: string
   stats: {
     years: string
     yearsLabel: string
