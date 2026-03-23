@@ -45,6 +45,9 @@ export async function GET(request: NextRequest) {
     `
     
     console.log('[v0] Fetching PostHog events using Query API')
+    console.log('[v0] API URL:', apiUrl)
+    console.log('[v0] API Key starts with:', POSTHOG_API_KEY?.substring(0, 10))
+    console.log('[v0] Project ID:', PROJECT_ID)
     
     const eventsResponse = await fetch(apiUrl, {
       method: 'POST',
@@ -61,9 +64,11 @@ export async function GET(request: NextRequest) {
       cache: 'no-store'
     })
 
+    console.log('[v0] PostHog response status:', eventsResponse.status)
     if (!eventsResponse.ok) {
       const errorText = await eventsResponse.text()
       console.error('[v0] PostHog API error:', eventsResponse.status, errorText)
+      console.error('[v0] Full error:', errorText)
       return NextResponse.json({
         totalViews: 0,
         uniqueCountries: 0,
@@ -77,10 +82,14 @@ export async function GET(request: NextRequest) {
     }
 
     const data = await eventsResponse.json()
+    console.log('[v0] PostHog raw response:', JSON.stringify(data).substring(0, 500))
     const results = data.results || []
     const columns = data.columns || ['url', 'pathname', 'country', 'city', 'browser', 'device', 'timestamp']
     
     console.log('[v0] PostHog returned events count:', results.length)
+    if (results.length > 0) {
+      console.log('[v0] First result:', JSON.stringify(results[0]))
+    }
     
     // Convert results array to objects
     const events = results.map((row: any[]) => {
