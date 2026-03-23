@@ -43,7 +43,7 @@ interface AnalyticsData {
   uniqueCountries: number
   uniqueCities: number
   countries: { name: string; views: number }[]
-  cities: { name: string; views: number; country: string }[]
+  cities: { name: string; views: number; country: string; lat?: number | null; lng?: number | null }[]
   pages: { path: string; views: number }[]
   daily: { date: string; views: number }[]
   recentVisitors?: { country: string; city: string; page: string; time: string; browser?: string }[]
@@ -277,7 +277,7 @@ export default function AnalyticsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Map */}
           <div className="lg:col-span-2">
-            <VisitorMap countries={data?.countries || []} />
+            <VisitorMap countries={data?.countries || []} cities={data?.cities || []} />
           </div>
           
           {/* Top Countries Table */}

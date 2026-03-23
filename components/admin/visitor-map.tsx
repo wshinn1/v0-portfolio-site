@@ -105,23 +105,47 @@ const countryToCoords: Record<string, [number, number]> = {
   'PE': [-75.0152, -9.1900],
 }
 
-interface VisitorMapProps {
-  countries: { name: string; views: number }[]
+interface City {
+  name: string
+  country: string
+  views: number
+  lat: number | null
+  lng: number | null
 }
 
-export function VisitorMap({ countries }: VisitorMapProps) {
-  const markers = useMemo(() => {
-    return countries
-      .filter(c => countryToCoords[c.name])
-      .map(c => ({
-        name: c.name,
-        views: c.views,
-        coordinates: countryToCoords[c.name] as [number, number]
-      }))
-  }, [countries])
+interface VisitorMapProps {
+  countries: { name: string; views: number }[]
+  cities?: City[]
+}
 
-  const maxViews = Math.max(...countries.map(c => c.views), 1)
-  const hasData = countries.length > 0
+export function VisitorMap({ countries, cities = [] }: VisitorMapProps) {
+  // Prioritize city-level markers with actual coordinates
+  const markers = useMemo(() => {
+    // First, use cities that have real lat/lng coordinates
+    const cityMarkers = cities
+      .filter(c => c.lat !== null && c.lng !== null)
+      .map(c => ({
+        name: `${c.name}, ${c.country}`,
+        views: c.views,
+        coordinates: [c.lng!, c.lat!] as [number, number]
+      }))
+    
+    // If no city coordinates, fall back to country centers
+    if (cityMarkers.length === 0) {
+      return countries
+        .filter(c => countryToCoords[c.name])
+        .map(c => ({
+          name: c.name,
+          views: c.views,
+          coordinates: countryToCoords[c.name] as [number, number]
+        }))
+    }
+    
+    return cityMarkers
+  }, [countries, cities])
+
+  const maxViews = Math.max(...markers.map(m => m.views), 1)
+  const hasData = markers.length > 0 || countries.length > 0
 
   return (
     <div className="w-full h-[350px] bg-gradient-to-b from-slate-50 to-slate-100 rounded-xl overflow-hidden relative">
