@@ -357,7 +357,38 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Bottom Row - Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        {/* States */}
+        <div className="bg-white rounded-xl border border-slate-100 p-5 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-semibold text-slate-800">States</h2>
+            <span className="text-xs bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full">{days} days</span>
+          </div>
+          
+          <div className="space-y-2 max-h-[250px] overflow-y-auto">
+            {data?.states && data.states.length > 0 ? (
+              data.states.map((state, index) => (
+                <div key={`${state.name}-${index}`} className="flex items-center justify-between py-2 px-2 bg-slate-50 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 bg-violet-100 rounded flex items-center justify-center">
+                      <MapPin className="w-3 h-3 text-violet-500" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm text-slate-700 truncate">{state.name}</p>
+                      <p className="text-xs text-slate-400 truncate">{state.country}</p>
+                    </div>
+                  </div>
+                  <span className="text-sm font-semibold text-slate-800">{state.views}</span>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-4 text-slate-400 text-sm">
+                No state data yet
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Cities */}
         <div className="bg-white rounded-xl border border-slate-100 p-5 shadow-sm">
           <div className="flex items-center justify-between mb-4">
