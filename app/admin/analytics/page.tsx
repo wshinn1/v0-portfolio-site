@@ -357,12 +357,43 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Bottom Row - Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Top Cities */}
+        <div className="bg-white rounded-xl border border-slate-100 p-5 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-semibold text-slate-800">Top Cities</h2>
+            <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">{days} days</span>
+          </div>
+          
+          <div className="space-y-2 max-h-[200px] overflow-y-auto">
+            {data?.cities && data.cities.length > 0 ? (
+              data.cities.slice(0, 6).map((city, index) => (
+                <div key={`${city.name}-${index}`} className="flex items-center justify-between py-2 px-2 bg-slate-50 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 bg-emerald-100 rounded flex items-center justify-center">
+                      <MapPin className="w-3 h-3 text-emerald-500" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm text-slate-700 truncate">{city.name}</p>
+                      {city.state && <p className="text-xs text-slate-400 truncate">{city.state}</p>}
+                    </div>
+                  </div>
+                  <span className="text-sm font-semibold text-slate-800">{city.views}</span>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-4 text-slate-400 text-sm">
+                No city data yet
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Audience Metrics */}
         <div className="bg-white rounded-xl border border-slate-100 p-5 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-semibold text-slate-800">Audience Metrics</h2>
-            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">This Month</span>
+            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">{days} days</span>
           </div>
           
           <div className="space-y-4">
@@ -399,7 +430,7 @@ export default function AnalyticsPage() {
         <div className="bg-white rounded-xl border border-slate-100 p-5 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-semibold text-slate-800">Top Pages</h2>
-            <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">This Month</span>
+            <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">{days} days</span>
           </div>
           
           <div className="space-y-3">

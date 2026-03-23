@@ -199,12 +199,13 @@ export function HeroSection({ content, siteSettings }: HeroSectionProps) {
 
         {/* Center Column - Profile Image */}
         <div className="lg:col-span-4 flex justify-center">
-          <div className="relative w-full max-w-md aspect-[3/4] min-h-[400px] rounded-lg overflow-hidden bg-gray-200">
+          <div className="relative w-full max-w-md h-[500px] rounded-lg overflow-hidden bg-gray-200">
             {content.profileImage ? (
               <Image
                 src={content.profileImage}
                 alt={`${content.firstName} ${content.lastName}`}
                 fill
+                sizes="(max-width: 768px) 100vw, 400px"
                 className="object-cover"
                 priority
               />
