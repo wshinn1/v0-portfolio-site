@@ -75,12 +75,23 @@ export async function GET(request: NextRequest) {
 
     const eventsData = await eventsResponse.json()
     const events: PostHogEvent[] = eventsData.results || []
+    
+    console.log('[v0] PostHog returned events count:', events.length)
+    if (events.length > 0) {
+      console.log('[v0] Sample event URL:', events[0].properties?.$current_url)
+    }
 
-    // Filter events for this domain only
-    const domainEvents = events.filter(event => {
+    // Filter events for this domain only (or show all if no domain match)
+    let domainEvents = events.filter(event => {
       const url = event.properties?.$current_url || ''
-      return url.includes('fullstack.wesshinn.com') || url.includes('localhost')
+      return url.includes('fullstack.wesshinn.com') || url.includes('wesshinn.com') || url.includes('localhost')
     })
+    
+    // If no domain-filtered events, show all events for debugging
+    if (domainEvents.length === 0 && events.length > 0) {
+      console.log('[v0] No domain-filtered events found, showing all events')
+      domainEvents = events
+    }
 
     // Aggregate data
     const countryMap = new Map<string, number>()
