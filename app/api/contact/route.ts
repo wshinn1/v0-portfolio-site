@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
       try {
         const resend = new Resend(process.env.RESEND_API_KEY)
         await resend.emails.send({
-          from: 'Portfolio Contact <onboarding@resend.dev>',
+          from: 'Portfolio Contact <contact@wesshinn.com>',
           to: ['weshinn@gmail.com'],
           replyTo: email,
           subject: `New Contact Form Submission from ${name}`,
