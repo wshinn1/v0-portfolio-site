@@ -7,6 +7,7 @@ const supabase = createClient(
 )
 
 // This endpoint receives analytics events from Vercel Web Analytics Drain
+// Vercel sends JSON arrays with schema "vercel.analytics.v2" and eventType "pageview"
 export async function POST(request: NextRequest) {
   try {
     const events = await request.json()
@@ -15,16 +16,16 @@ export async function POST(request: NextRequest) {
     const eventArray = Array.isArray(events) ? events : [events]
     
     const pageViews = eventArray
-      .filter((event: any) => event.type === 'pageview')
+      .filter((event: any) => event.eventType === 'pageview')
       .map((event: any) => ({
-        path: event.payload?.path || event.path || '/',
-        country: event.payload?.country || event.geo?.country || null,
-        city: event.payload?.city || event.geo?.city || null,
-        region: event.payload?.region || event.geo?.region || null,
-        device: event.payload?.device || null,
-        browser: event.payload?.browser || null,
-        referrer: event.payload?.referrer || null,
-        timestamp: event.payload?.timestamp || event.timestamp || new Date().toISOString(),
+        path: event.path || '/',
+        country: event.geo?.country || null,
+        city: event.geo?.city || null,
+        region: event.geo?.region || null,
+        device: event.ua?.device || null,
+        browser: event.ua?.browser || null,
+        referrer: event.referrer || null,
+        timestamp: event.timestamp ? new Date(event.timestamp).toISOString() : new Date().toISOString(),
       }))
 
     if (pageViews.length > 0) {
