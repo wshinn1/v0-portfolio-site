@@ -54,7 +54,6 @@ export default function AnalyticsPage() {
       const response = await fetch(`/api/analytics?days=${days}`)
       if (!response.ok) throw new Error('Failed to fetch analytics')
       const result = await response.json()
-      console.log('[v0] Analytics data received:', result)
       setData(result)
     } catch (err) {
       setError('Failed to load analytics data')
