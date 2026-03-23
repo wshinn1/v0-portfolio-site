@@ -54,6 +54,7 @@ export default function AnalyticsPage() {
       const response = await fetch(`/api/analytics?days=${days}`)
       if (!response.ok) throw new Error('Failed to fetch analytics')
       const result = await response.json()
+      console.log('[v0] Analytics data received:', result)
       setData(result)
     } catch (err) {
       setError('Failed to load analytics data')
@@ -71,7 +72,7 @@ export default function AnalyticsPage() {
     )
   }
 
-  const hasData = data && (data.totalViews > 0 || data.countries.length > 0)
+  const hasData = data && data.totalViews > 0
 
   return (
     <div className="space-y-8">
