@@ -177,12 +177,12 @@ export function VisitorMap({ countries, cities = [] }: VisitorMapProps) {
             }
           </Geographies>
           {markers.map(({ name, coordinates, views }) => {
-            const size = Math.max(8, Math.min(24, (views / maxViews) * 24 + 8))
+            const size = Math.max(4, Math.min(10, (views / maxViews) * 10 + 4))
             return (
               <Marker key={name} coordinates={coordinates}>
                 {/* Pulse ring */}
                 <circle
-                  r={size + 4}
+                  r={size + 3}
                   fill="#3b82f6"
                   fillOpacity={0.2}
                   className="animate-ping"
@@ -194,11 +194,11 @@ export function VisitorMap({ countries, cities = [] }: VisitorMapProps) {
                   fill="#3b82f6"
                   fillOpacity={0.8}
                   stroke="#fff"
-                  strokeWidth={2}
+                  strokeWidth={1.5}
                 />
                 {/* Center dot */}
                 <circle
-                  r={3}
+                  r={1.5}
                   fill="#fff"
                 />
                 <title>{`${name}: ${views} views`}</title>
