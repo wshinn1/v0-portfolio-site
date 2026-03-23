@@ -10,7 +10,8 @@ import {
   Settings, 
   FileText,
   LogOut,
-  Loader2
+  Loader2,
+  BarChart3
 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
@@ -18,6 +19,7 @@ import { useRouter } from "next/navigation"
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/sections", label: "Sections", icon: FileText },
+  { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/admin/typography", label: "Typography", icon: Type },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ]
