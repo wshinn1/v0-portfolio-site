@@ -299,28 +299,58 @@ export default function AnalyticsPage() {
             <VisitorMap countries={data?.countries || []} cities={data?.cities || []} />
           </div>
           
-          {/* Top Countries Table */}
-          <div className="bg-slate-50 rounded-xl p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-medium text-slate-700">Top Countries</h3>
-              <span className="text-xs text-slate-400">Users</span>
-            </div>
-            <div className="space-y-2">
-              {data?.countries && data.countries.length > 0 ? (
-                data.countries.slice(0, 5).map((country, index) => (
-                  <div key={country.name} className="flex items-center justify-between py-2 px-2 bg-white rounded-lg">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">{countryFlags[country.name] || '🌍'}</span>
-                      <span className="text-sm text-slate-700">{country.name}</span>
+          {/* Top Countries & States Tables */}
+          <div className="space-y-4">
+            {/* Top Countries Table */}
+            <div className="bg-slate-50 rounded-xl p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-medium text-slate-700">Top Countries</h3>
+                <span className="text-xs text-slate-400">Users</span>
+              </div>
+              <div className="space-y-2">
+                {data?.countries && data.countries.length > 0 ? (
+                  data.countries.slice(0, 5).map((country, index) => (
+                    <div key={country.name} className="flex items-center justify-between py-2 px-2 bg-white rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">{countryFlags[country.name] || '🌍'}</span>
+                        <span className="text-sm text-slate-700">{country.name}</span>
+                      </div>
+                      <span className="text-sm font-semibold text-slate-800">{country.views.toLocaleString()}</span>
                     </div>
-                    <span className="text-sm font-semibold text-slate-800">{country.views.toLocaleString()}</span>
+                  ))
+                ) : (
+                  <div className="text-center py-4 text-slate-400 text-sm">
+                    No country data yet
                   </div>
-                ))
-              ) : (
-                <div className="text-center py-4 text-slate-400 text-sm">
-                  No country data yet
-                </div>
-              )}
+                )}
+              </div>
+            </div>
+
+            {/* Top States Table */}
+            <div className="bg-slate-50 rounded-xl p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-medium text-slate-700">Top States</h3>
+                <span className="text-xs text-slate-400">Users</span>
+              </div>
+              <div className="space-y-2">
+                {data?.states && data.states.length > 0 ? (
+                  data.states.slice(0, 5).map((state, index) => (
+                    <div key={state.name} className="flex items-center justify-between py-2 px-2 bg-white rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 bg-violet-100 rounded flex items-center justify-center">
+                          <MapPin className="w-3 h-3 text-violet-500" />
+                        </div>
+                        <span className="text-sm text-slate-700">{state.name}</span>
+                      </div>
+                      <span className="text-sm font-semibold text-slate-800">{state.views.toLocaleString()}</span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-4 text-slate-400 text-sm">
+                    No state data yet
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
