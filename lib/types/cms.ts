@@ -71,6 +71,7 @@ export interface HeroContent {
   email: string
   profileImage: string
   linkedinUrl: string
+  hideContactButton: boolean
   stats: {
     years: string
     yearsLabel: string
@@ -97,6 +98,7 @@ export interface AboutContent {
   resumeUrl: string
   resumeButtonText: string
   contactButtonText: string
+  linkedinUrl: string
 }
 
 // Work Section
