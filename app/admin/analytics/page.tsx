@@ -178,9 +178,10 @@ export default function AnalyticsPage() {
             onChange={(e) => setDays(parseInt(e.target.value))}
             className="text-xs px-2 py-1.5 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
-            <option value={7}>7 days</option>
-            <option value={30}>30 days</option>
-            <option value={90}>90 days</option>
+<option value={1}>Today</option>
+  <option value={7}>7 days</option>
+  <option value={30}>30 days</option>
+  <option value={90}>90 days</option>
           </select>
         </div>
       </div>
