@@ -279,6 +279,8 @@ function generateEmailHTML(analytics: Awaited<ReturnType<typeof fetchYesterdayAn
 }
 
 export async function GET(request: NextRequest) {
+  console.log('[v0] Analytics report cron triggered')
+  
   // Verify cron secret for security (optional but recommended)
   const authHeader = request.headers.get('authorization')
   const cronSecret = process.env.CRON_SECRET
@@ -286,37 +288,50 @@ export async function GET(request: NextRequest) {
   // Allow local testing or verify cron secret
   if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
     // Still allow the request but log it - Vercel cron may not always send the header
-    console.log('Analytics report triggered (cron or manual)')
+    console.log('[v0] Analytics report triggered (cron or manual)')
   }
 
+  console.log('[v0] POSTHOG_API_KEY exists:', !!POSTHOG_API_KEY)
+  console.log('[v0] RESEND_API_KEY exists:', !!RESEND_API_KEY)
+
   if (!POSTHOG_API_KEY) {
+    console.log('[v0] Error: PostHog API key not configured')
     return NextResponse.json({ error: 'PostHog API key not configured' }, { status: 500 })
   }
 
   if (!RESEND_API_KEY) {
+    console.log('[v0] Error: Resend API key not configured')
     return NextResponse.json({ error: 'Resend API key not configured' }, { status: 500 })
   }
 
   try {
+    console.log('[v0] Fetching yesterday analytics...')
     // Fetch yesterday's analytics
     const analytics = await fetchYesterdayAnalytics()
+    console.log('[v0] Analytics fetched:', analytics.totalViews, 'views')
     
     // Generate email HTML
     const emailHTML = generateEmailHTML(analytics)
+    console.log('[v0] Email HTML generated')
     
     // Send email via Resend
+    // Use onboarding@resend.dev for testing if domain not verified
+    const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev'
+    console.log('[v0] Sending email from:', fromEmail)
+    
     const { data, error } = await resend.emails.send({
-      from: 'Portfolio Analytics <analytics@wesshinn.com>',
+      from: `Portfolio Analytics <${fromEmail}>`,
       to: ['weshinn@gmail.com'],
       subject: `Portfolio Analytics Report - ${analytics.date}`,
       html: emailHTML,
     })
 
     if (error) {
-      console.error('Resend error:', error)
+      console.error('[v0] Resend error:', JSON.stringify(error))
       return NextResponse.json({ error: 'Failed to send email', details: error }, { status: 500 })
     }
 
+    console.log('[v0] Email sent successfully, ID:', data?.id)
     return NextResponse.json({ 
       success: true, 
       message: 'Analytics report sent successfully',
@@ -330,7 +345,7 @@ export async function GET(request: NextRequest) {
       }
     })
   } catch (error) {
-    console.error('Analytics report error:', error)
+    console.error('[v0] Analytics report error:', error)
     return NextResponse.json({ 
       error: 'Failed to generate analytics report',
       details: error instanceof Error ? error.message : 'Unknown error'
