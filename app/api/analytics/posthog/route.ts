@@ -27,6 +27,11 @@ export async function GET(request: NextRequest) {
     const apiUrl = `${apiHost}/api/projects/${PROJECT_ID}/query/`
     
     // Use HogQL to query pageview events with city coordinates and state/region
+    // For "today" (days=1), use last 24 hours to ensure we get current day data
+    const timeFilter = days === 1 
+      ? `timestamp >= now() - INTERVAL 24 HOUR`
+      : `timestamp >= now() - INTERVAL ${days} DAY`
+    
     const hogqlQuery = `
       SELECT 
         properties.$current_url as url,
@@ -41,7 +46,7 @@ export async function GET(request: NextRequest) {
         timestamp
       FROM events 
       WHERE event = '$pageview' 
-        AND timestamp >= now() - INTERVAL ${days} DAY
+        AND ${timeFilter}
       ORDER BY timestamp DESC
       LIMIT 1000
     `
