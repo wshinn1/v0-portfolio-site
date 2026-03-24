@@ -1,8 +1,6 @@
-# Portfolio CMS - Full-Stack Portfolio Website
+# Portfolio CMS - Full-Stack Content Management System
 
-A modern, full-stack portfolio website with a custom CMS built entirely through conversational AI using [v0.app](https://v0.app). This project demonstrates the power of AI-assisted development, going from idea to production in iterative phases.
-
-**Live Site:** [fullstack.wesshinn.com](https://fullstack.wesshinn.com)
+A modern, full-stack content management system and website built with Next.js 16, Supabase, and Tailwind CSS. Features a comprehensive admin dashboard, real-time analytics with PostHog, typography customization, and automated email reporting. Built with spec-driven intent and iterative development phases.
 
 ---
 
